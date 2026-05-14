@@ -1,0 +1,76 @@
+# =============================================================================
+# MAMBO OUTBACK ECLIPSE PALETTE
+# A massive, expanded spectrum of Desert Earth and Dark Forest vibes.
+# Format: name,hex,alpha,category
+# =============================================================================
+
+# --- Deep Horizons (The New Bases) ---
+abyssal_bark,141a17,ff,base
+burnt_charcoal,1c1615,ff,base
+canyon_floor,2b2120,ff,ui
+crushed_clay,4a3532,ff,ui
+dusty_parchment,fdfaf2,ff,base
+river_silt,ebdcd0,ff,ui
+
+# --- Scorched Earth (Reds & Terracottas) ---
+magma_dust,b84233,ff,accent
+wildfire,cc523b,ff,accent
+rusty_canyon,943828,ff,accent
+baked_brick,7c2d22,ff,accent
+crimson_creek,5e1e17,ff,accent
+
+# --- Twilight Canyon (Muted Roses & Plums) ---
+desert_rose,a65b53,ff,bridge
+dusty_mauve,8c5258,ff,bridge
+wild_plum,6e3b45,ff,accent
+berry_bramble,4c222e,ff,accent
+dusk_shadow,331a24,ff,accent
+
+# --- Outback Sunsets (Oranges & Coppers) ---
+apricot_dust,de8554,ff,accent
+canyon_flash,e69565,ff,accent
+burnt_ochre,b86935,ff,accent
+iron_oxide,964e22,ff,accent
+ember_glow,753913,ff,accent
+
+# --- Desert Gold & Grasses (Yellows & Straws) ---
+tumbleweed,dfb16c,ff,accent
+spinifex_gold,e6c280,ff,accent
+dry_straw,c49852,ff,accent
+roasted_cumin,9c7333,ff,accent
+savannah_dusk,6e501e,ff,accent
+
+# --- Sage & Scrub (Light/Olive Greens) ---
+desert_sage,8fa382,ff,accent
+pale_spinifex,a4b598,ff,accent
+dusty_olive,738763,ff,accent
+lichen_crust,5a6e4a,ff,accent
+dry_moss,435234,ff,accent
+
+# --- Deep Canopy (Dark Forest Greens) ---
+eucalyptus_leaf,4a6353,ff,accent
+overgrown_fern,384f40,ff,accent
+swamp_murk,283b30,ff,accent
+ancient_pine,1b2921,ff,accent
+midnight_forest,0f1c15,ff,accent
+
+# --- Riverbed & Shale (Teals & Cyans) ---
+shale_green,6b8c85,ff,bridge
+river_ooze,4d7069,ff,bridge
+deep_teal,2d524b,ff,accent
+sunken_timber,1c3833,ff,accent
+flooded_creek,112421,ff,accent
+
+# --- Stormy Skies (Blues & Slates) ---
+outback_sky,4e687d,ff,accent
+eucalyptus_smoke,6b8496,ff,accent
+bluestone,364f61,ff,accent
+storm_canopy,233745,ff,accent
+night_monsoon,11202b,ff,accent
+
+# --- Earth Typo & Muted Tones (Texts & Details) ---
+fossil_bone,ded3c5,ff,text
+weathered_wood,bdae9d,ff,text
+termite_mound,8f7865,ff,text
+dried_bark,665242,ff,text
+charred_root,3d2e24,ff,text

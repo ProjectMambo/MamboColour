@@ -1,0 +1,33 @@
+# =============================================================================
+# MAMBO HERITAGE PALETTE
+# A blend of Desert Earth and Dark Forest vibes.
+# Format: name,hex,alpha,category
+# =============================================================================
+
+# --- Base & Backgrounds ---
+bg,241616,ff,base
+bg_dark,1c1111,ff,base
+deep_oak,3b2a2a,ff,ui
+surface,5e2c31,ee,ui
+
+# --- Text & Typography ---
+comment,765d3f,ff,text
+fg,e9c5aa,ff,text
+sandstone,f1d4b9,ff,text
+
+# --- Red & Purple (The Warm/Wine Tones) ---
+red,a93622,ee,accent
+rose_wood,984a42,ee,bridge
+purple,822727,ee,accent
+
+# --- Orange & Gold (The Metallic/Sunset Tones) ---
+orange,d3a774,ee,accent
+copper,b56952,ee,accent
+muted_gold,c0955e,ee,bridge
+yellow,e5cb7c,ee,accent
+
+# --- Green & Blue (The Nature/Cold Tones) ---
+green,5c705a,ee,accent
+forest_shadow,3d524a,ee,bridge
+blue,283e4f,ee,accent
+cyan,8e9e9b,ee,accent

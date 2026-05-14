@@ -1,0 +1,28 @@
+# =============================================================================
+# MAMBO ORCHE LIGHT PALETTE
+# A clean, readable web palette inspired by Desert Earth & Dark Forest.
+# Format: name,hex,alpha,category
+# =============================================================================
+
+# --- Base & Backgrounds (Clean & Breathable) ---
+bg,FAF7F2,ff,base          # Warm alabaster/cream (Soft on the eyes, replaces stark white)
+bg_surface,F3ECE2,ff,ui    # Light sandstone layer for cards, sidebars, and inputs
+border,E1D5C3,ff,ui        # Subtle earthy divider line
+
+# --- Text & Typography (High Contrast Readability) ---
+fg,1C1111,ff,text          # Your original 'bg_dark' – now used as deep, rich text
+fg_muted,5C4D4A,ff,text    # Muted earthy brown for secondary text/captions
+comment,765D3F,ff,text     # Your original comment color retained for hints/code
+
+# --- Primary Brand Accents (The Desert Earth) ---
+brand,A93622,ff,accent     # Your original Red – perfect for primary buttons and logos
+brand_hover,822727,ff,ui   # Your original Purple – acts as a rich hover state for buttons
+
+# --- Secondary & Interactive (The Dark Forest) ---
+interactive,3D524A,ff,ui   # Your Forest Shadow – great for navigation links and secondary actions
+interactive_hover,5C705A,ff,ui # Your Green – hover state for links
+
+# --- Feedback & Status (Used Sparingly) ---
+success,5C705A,ff,status   # Green
+warning,D3A774,ff,status   # Orange/Gold
+error,A93622,ff,status     # Red

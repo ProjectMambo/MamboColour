@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mambo Orche Palette</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* --- Base & Backgrounds (Clean & Breathable) --- */
+    --bg:           #FAF7F2; /* Warm alabaster cream */
+    --bg-dark:      #F3ECE2; /* Light sandstone layer */
+    --deep-oak:     #E1D5C3; /* Earthy structural border/divider */
+    --surface:      #FFFFFF; /* Pure crisp white for card layers */
+    
+    /* --- Text & Typography (High Contrast Readability) --- */
+    --fg:           #1C1111; /* Deep rich earthy charcoal (Your original bg_dark) */
+    --fg-muted:     #5C4D4A; /* Muted brown for secondary text */
+    --comment:      #765D3F; /* Original warm comment color */
+    
+    /* --- Primary Brand Accents (The Desert Earth) --- */
+    --red:          #A93622; /* Core brand action color */
+    --rose-wood:    #984A42; /* Soft terracotta secondary */
+    --purple:       #822727; /* Rich maroon hover/deep accent */
+    
+    /* --- Orange & Gold (Sunset Highlights) --- */
+    --orange:       #D3A774; 
+    --copper:       #B56952; 
+    --muted-gold:   #C0955E; 
+    --yellow:       #E5CB7C; 
+    
+    /* --- Green & Blue (The Nature Grounding) --- */
+    --green:        #5C705A; 
+    --forest:       #3D524A; 
+    --blue:         #283E4F; 
+    --cyan:         #8E9E9B; 
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    padding: 60px 48px;
+  }
+
+  header {
+    margin-bottom: 64px;
+    border-left: 2px solid var(--red);
+    padding-left: 20px;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--fg);
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  header p {
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--fg-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .section {
+    margin-bottom: 52px;
+  }
+
+  .section-title {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--comment);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--deep-oak);
+  }
+
+  .grid {
+    display: grid;
+    gap: 2px;
+  }
+
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+  .swatch {
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+    background: var(--bg-dark);
+  }
+
+  .swatch-body {
+    height: 110px;
+    width: 100%;
+    transition: transform 0.2s ease;
+    display: flex;
+    align-items: flex-end;
+    padding: 10px 12px;
+  }
+
+  .swatch:hover .swatch-body {
+    transform: scale(1.02);
+  }
+
+  .swatch-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .swatch:hover .swatch-label {
+    opacity: 1;
+  }
+
+  .swatch-meta {
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px solid var(--deep-oak);
+    border-top: none;
+  }
+
+  .swatch-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--fg);
+    display: block;
+  }
+
+  .swatch-hex {
+    font-size: 11px;
+    color: var(--fg-muted);
+    display: block;
+    margin-top: 2px;
+  }
+
+  /* Wide showcase for key accents */
+  .showcase {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-bottom: 52px;
+  }
+
+  .showcase-block {
+    height: 160px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    padding: 16px 20px;
+  }
+
+  .showcase-block-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .showcase-block-name {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  .showcase-block-hex {
+    font-size: 11px;
+    opacity: 0.8;
+    margin-top: 2px;
+  }
+
+  /* Contrast checker strip */
+  .contrast-strip {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 52px;
+  }
+
+  .contrast-cell {
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-radius: 6px;
+    border: 1px solid var(--deep-oak);
+  }
+
+  .contrast-cell .sample-text {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .contrast-cell .sample-small {
+    font-size: 10px;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* Gradient ribbon */
+  .ribbon {
+    height: 6px;
+    width: 100%;
+    background: linear-gradient(
+      to right,
+      #FAF7F2, #F3ECE2, #822727, #A93622, #984A42,
+      #B56952, #C0955E, #D3A774, #E5CB7C,
+      #5C705A, #3D524A, #283E4F, #8E9E9B
+    );
+    border-radius: 3px;
+    margin-bottom: 52px;
+  }
+
+  footer {
+    border-top: 1px solid var(--deep-oak);
+    padding-top: 24px;
+    font-size: 10px;
+    color: var(--fg-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Terracotta Minimal</h1>
+  <p>Sunlit Earth · Bright Canopy · 14 Refined UI Colors</p>
+</header>
+
+<!-- Gradient ribbon -->
+<div class="ribbon"></div>
+
+<!-- Base & Backgrounds -->
+<section class="section">
+  <div class="section-title">Base &amp; Backgrounds</div>
+  <div class="grid grid-4">
+    <div class="swatch">
+      <div class="swatch-body" style="background:var(--bg);">
+        <span class="swatch-label" style="color:var(--fg);">bg</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">bg</span><span class="swatch-hex">#FAF7F2 · Canvas</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:var(--bg-dark);">
+        <span class="swatch-label" style="color:var(--fg);">bg_dark</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">bg_surface</span><span class="swatch-hex">#F3ECE2 · Cards</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:var(--deep-oak);">
+        <span class="swatch-label" style="color:var(--fg);">deep_oak</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">border</span><span class="swatch-hex">#E1D5C3 · Dividers</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:var(--surface);">
+        <span class="swatch-label" style="color:var(--fg);">surface</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">pure_white</span><span class="swatch-hex">#FFFFFF · Inputs</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Text & Typography -->
+<section class="section">
+  <div class="section-title">Text &amp; Typography</div>
+  <div class="grid grid-3">
+    <div class="swatch">
+      <div class="swatch-body" style="background:var(--fg);">
+        <span class="swatch-label" style="color:var(--bg);">fg</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">fg (Main Text)</span><span class="swatch-hex">#1C1111 · 100%</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:var(--fg-muted);">
+        <span class="swatch-label" style="color:var(--bg);">fg_muted</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">fg_muted (Body)</span><span class="swatch-hex">#5C4D4A · 100%</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:var(--comment);">
+        <span class="swatch-label" style="color:var(--bg);">comment</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">comment (Hints)</span><span class="swatch-hex">#765D3F · 100%</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Showcase: Warm Tones -->
+<section class="section">
+  <div class="section-title">Red &amp; Purple — Warm/Wine Tones</div>
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:2px;">
+    <div class="showcase-block" style="background:var(--red);">
+      <div class="showcase-block-info">
+        <span class="showcase-block-name" style="color:var(--bg);">red / brand</span>
+        <span class="showcase-block-hex" style="color:var(--bg);">#A93622</span>
+      </div>
+    </div>
+    <div class="showcase-block" style="background:var(--rose-wood);">
+      <div class="showcase-block-info">
+        <span class="showcase-block-name" style="color:var(--bg);">rose_wood</span>
+        <span class="showcase-block-hex" style="color:var(--bg);">#984A42</span>
+      </div>
+    </div>
+    <div class="showcase-block" style="background:var(--purple);">
+      <div class="showcase-block-info">
+        <span class="showcase-block-name" style="color:var(--bg);">purple / hover</span>
+        <span class="showcase-block-hex" style="color:var(--bg);">#822727</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Showcase: Sunset Tones -->
+<section class="section">
+  <div class="section-title">Orange &amp; Gold — Metallic/Sunset Tones</div>
+  <div class="grid grid-4">
+    <div class="swatch">
+      <div class="swatch-body" style="background:var(--orange); height:140px;">
+        <span class="swatch-label" style="color:var(--fg);">orange</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">orange</span><span class="swatch-hex">#D3A774</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:var(--copper); height:140px;">
+        <span class="swatch-label" style="color:var(--bg);">copper</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">copper</span><span class="swatch-hex">#B56952</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:var(--muted-gold); height:140px;">
+        <span class="swatch-label" style="color:var(--fg);">muted_gold</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">muted_gold</span><span class="swatch-hex">#C0955E</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:var(--yellow); height:140px;">
+        <span class="swatch-label" style="color:var(--fg);">yellow</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">yellow</span><span class="swatch-hex">#E5CB7C</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Showcase: Cold Tones -->
+<section class="section">
+  <div class="section-title">Green &amp; Blue — Nature/Cold Tones</div>
+  <div class="grid grid-4">
+    <div class="swatch">
+      <div class="swatch-body" style="background:var(--green); height:140px;">
+        <span class="swatch-label" style="color:var(--bg);">green</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">green</span><span class="swatch-hex">#5C705A</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:var(--forest); height:140px;">
+        <span class="swatch-label" style="color:var(--bg);">forest_shadow</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">forest_shadow</span><span class="swatch-hex">#3D524A</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:var(--blue); height:140px;">
+        <span class="swatch-label" style="color:var(--bg);">blue</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">blue</span><span class="swatch-hex">#283E4F</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:var(--cyan); height:140px;">
+        <span class="swatch-label" style="color:var(--fg);">cyan</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">cyan</span><span class="swatch-hex">#8E9E9B</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Contrast preview -->
+<section class="section">
+  <div class="section-title">Text on backgrounds — web contrast preview</div>
+  <div class="contrast-strip">
+    <div class="contrast-cell" style="background:var(--bg);">
+      <span class="sample-text" style="color:var(--fg);">Heading Text</span>
+      <span class="sample-small" style="color:var(--fg-muted);">Body Text on bg</span>
+    </div>
+    <div class="contrast-cell" style="background:var(--bg-dark);">
+      <span class="sample-text" style="color:var(--fg);">Card Header</span>
+      <span class="sample-small" style="color:var(--comment);">on bg_surface</span>
+    </div>
+    <div class="contrast-cell" style="background:var(--red);">
+      <span class="sample-text" style="color:var(--bg);">CTA Button</span>
+      <span class="sample-small" style="color:var(--bg-dark);">White on Red</span>
+    </div>
+    <div class="contrast-cell" style="background:var(--bg);">
+      <span class="sample-text" style="color:var(--forest);">Forest Link</span>
+      <span class="sample-small" style="color:var(--green);">Link Hover</span>
+    </div>
+    <div class="contrast-cell" style="background:var(--bg);">
+      <span class="sample-text" style="color:var(--muted-gold);">Gold Badge</span>
+      <span class="sample-small" style="color:var(--orange);">Warning</span>
+    </div>
+    <div class="contrast-cell" style="background:var(--blue);">
+      <span class="sample-text" style="color:var(--cyan);">Cyan Text</span>
+      <span class="sample-small" style="color:var(--bg);">on Blue Foot</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>Mambo Orche Palette</span>
+  <span>Refined for Web Design · 2026</span>
+</footer>
+
+</body>
+</html>

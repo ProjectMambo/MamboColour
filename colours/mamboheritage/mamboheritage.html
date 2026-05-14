@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mambo Heritage Palette</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:           #241616;
+    --bg-dark:      #1c1111;
+    --deep-oak:     #3b2a2a;
+    --surface:      #5e2c31ee;
+    --comment:      #765d3f;
+    --fg:           #e9c5aa;
+    --sandstone:    #f1d4b9;
+    --red:          #a93622ee;
+    --rose-wood:    #984a42ee;
+    --purple:       #822727ee;
+    --orange:       #d3a774ee;
+    --copper:       #b56952ee;
+    --muted-gold:   #c0955eee;
+    --yellow:       #e5cb7cee;
+    --green:        #5c705aee;
+    --forest:       #3d524aee;
+    --blue:         #283e4fee;
+    --cyan:         #8e9e9bee;
+  }
+
+  body {
+    background: var(--bg-dark);
+    color: var(--fg);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    padding: 60px 48px;
+  }
+
+  header {
+    margin-bottom: 64px;
+    border-left: 2px solid var(--comment);
+    padding-left: 20px;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--sandstone);
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  header p {
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--comment);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .section {
+    margin-bottom: 52px;
+  }
+
+  .section-title {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--comment);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--deep-oak);
+  }
+
+  .grid {
+    display: grid;
+    gap: 2px;
+  }
+
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+  .swatch {
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+  }
+
+  .swatch-body {
+    height: 110px;
+    width: 100%;
+    transition: transform 0.2s ease;
+    display: flex;
+    align-items: flex-end;
+    padding: 10px 12px;
+  }
+
+  .swatch:hover .swatch-body {
+    transform: scale(1.02);
+  }
+
+  .swatch-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .swatch:hover .swatch-label {
+    opacity: 1;
+  }
+
+  .swatch-meta {
+    padding: 10px 12px;
+    background: var(--deep-oak);
+  }
+
+  .swatch-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--fg);
+    display: block;
+  }
+
+  .swatch-hex {
+    font-size: 11px;
+    color: var(--comment);
+    display: block;
+    margin-top: 2px;
+  }
+
+  /* Wide showcase for key accents */
+  .showcase {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-bottom: 52px;
+  }
+
+  .showcase-block {
+    height: 160px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    padding: 16px 20px;
+  }
+
+  .showcase-block-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .showcase-block-name {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  .showcase-block-hex {
+    font-size: 11px;
+    opacity: 0.6;
+    margin-top: 2px;
+  }
+
+  /* Contrast checker strip */
+  .contrast-strip {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2px;
+    margin-bottom: 52px;
+  }
+
+  .contrast-cell {
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .contrast-cell .sample-text {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .contrast-cell .sample-small {
+    font-size: 10px;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* Gradient ribbon */
+  .ribbon {
+    height: 6px;
+    width: 100%;
+    background: linear-gradient(
+      to right,
+      #1c1111, #3b2a2a, #822727, #a93622, #984a42,
+      #b56952, #c0955e, #d3a774, #e5cb7c,
+      #5c705a, #3d524a, #283e4f, #8e9e9b
+    );
+    border-radius: 3px;
+    margin-bottom: 52px;
+    opacity: 0.85;
+  }
+
+  footer {
+    border-top: 1px solid var(--deep-oak);
+    padding-top: 24px;
+    font-size: 10px;
+    color: var(--comment);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Mambo Heritage</h1>
+  <p>Desert Earth · Dark Forest · 18 colors</p>
+</header>
+
+<!-- Gradient ribbon -->
+<div class="ribbon"></div>
+
+<!-- Base & Backgrounds -->
+<section class="section">
+  <div class="section-title">Base &amp; Backgrounds</div>
+  <div class="grid grid-4">
+    <div class="swatch">
+      <div class="swatch-body" style="background:#241616;">
+        <span class="swatch-label" style="color:#765d3f;">bg</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">bg</span><span class="swatch-hex">#241616 · 100%</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:#1c1111;">
+        <span class="swatch-label" style="color:#765d3f;">bg_dark</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">bg_dark</span><span class="swatch-hex">#1C1111 · 100%</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:#3b2a2a;">
+        <span class="swatch-label" style="color:#e9c5aa;">deep_oak</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">deep_oak</span><span class="swatch-hex">#3B2A2A · 100%</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:#5e2c31ee;">
+        <span class="swatch-label" style="color:#e9c5aa;">surface</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">surface</span><span class="swatch-hex">#5E2C31 · 93%</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Text & Typography -->
+<section class="section">
+  <div class="section-title">Text &amp; Typography</div>
+  <div class="grid grid-3">
+    <div class="swatch">
+      <div class="swatch-body" style="background:#765d3f;">
+        <span class="swatch-label" style="color:#1c1111;">comment</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">comment</span><span class="swatch-hex">#765D3F · 100%</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:#e9c5aa;">
+        <span class="swatch-label" style="color:#3b2a2a;">fg</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">fg</span><span class="swatch-hex">#E9C5AA · 100%</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:#f1d4b9;">
+        <span class="swatch-label" style="color:#3b2a2a;">sandstone</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">sandstone</span><span class="swatch-hex">#F1D4B9 · 100%</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Showcase: Warm Tones -->
+<section class="section">
+  <div class="section-title">Red &amp; Purple — Warm/Wine Tones</div>
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:2px;">
+    <div class="showcase-block" style="background:#a93622ee;">
+      <div class="showcase-block-info">
+        <span class="showcase-block-name" style="color:#f1d4b9;">red</span>
+        <span class="showcase-block-hex" style="color:#f1d4b9;">#A93622</span>
+      </div>
+    </div>
+    <div class="showcase-block" style="background:#984a42ee;">
+      <div class="showcase-block-info">
+        <span class="showcase-block-name" style="color:#f1d4b9;">rose_wood</span>
+        <span class="showcase-block-hex" style="color:#f1d4b9;">#984A42</span>
+      </div>
+    </div>
+    <div class="showcase-block" style="background:#822727ee;">
+      <div class="showcase-block-info">
+        <span class="showcase-block-name" style="color:#e9c5aa;">purple</span>
+        <span class="showcase-block-hex" style="color:#e9c5aa;">#822727</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Showcase: Sunset Tones -->
+<section class="section">
+  <div class="section-title">Orange &amp; Gold — Metallic/Sunset Tones</div>
+  <div class="grid grid-4">
+    <div class="swatch">
+      <div class="swatch-body" style="background:#d3a774ee; height:140px;">
+        <span class="swatch-label" style="color:#3b2a2a;">orange</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">orange</span><span class="swatch-hex">#D3A774</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:#b56952ee; height:140px;">
+        <span class="swatch-label" style="color:#f1d4b9;">copper</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">copper</span><span class="swatch-hex">#B56952</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:#c0955eee; height:140px;">
+        <span class="swatch-label" style="color:#3b2a2a;">muted_gold</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">muted_gold</span><span class="swatch-hex">#C0955E</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:#e5cb7cee; height:140px;">
+        <span class="swatch-label" style="color:#3b2a2a;">yellow</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">yellow</span><span class="swatch-hex">#E5CB7C</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Showcase: Cold Tones -->
+<section class="section">
+  <div class="section-title">Green &amp; Blue — Nature/Cold Tones</div>
+  <div class="grid grid-4">
+    <div class="swatch">
+      <div class="swatch-body" style="background:#5c705aee; height:140px;">
+        <span class="swatch-label" style="color:#e9c5aa;">green</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">green</span><span class="swatch-hex">#5C705A</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:#3d524aee; height:140px;">
+        <span class="swatch-label" style="color:#e9c5aa;">forest_shadow</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">forest_shadow</span><span class="swatch-hex">#3D524A</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:#283e4fee; height:140px;">
+        <span class="swatch-label" style="color:#e9c5aa;">blue</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">blue</span><span class="swatch-hex">#283E4F</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-body" style="background:#8e9e9bee; height:140px;">
+        <span class="swatch-label" style="color:#1c1111;">cyan</span>
+      </div>
+      <div class="swatch-meta"><span class="swatch-name">cyan</span><span class="swatch-hex">#8E9E9B</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Contrast preview -->
+<section class="section">
+  <div class="section-title">Text on backgrounds — contrast preview</div>
+  <div class="contrast-strip">
+    <div class="contrast-cell" style="background:#241616;">
+      <span class="sample-text" style="color:#e9c5aa;">fg on bg</span>
+      <span class="sample-small" style="color:#765d3f;">comment</span>
+    </div>
+    <div class="contrast-cell" style="background:#241616;">
+      <span class="sample-text" style="color:#f1d4b9;">sandstone</span>
+      <span class="sample-small" style="color:#765d3f;">on bg</span>
+    </div>
+    <div class="contrast-cell" style="background:#5e2c31;">
+      <span class="sample-text" style="color:#f1d4b9;">sandstone</span>
+      <span class="sample-small" style="color:#e9c5aa;">on surface</span>
+    </div>
+    <div class="contrast-cell" style="background:#3b2a2a;">
+      <span class="sample-text" style="color:#e5cb7c;">yellow</span>
+      <span class="sample-small" style="color:#c0955e;">on deep_oak</span>
+    </div>
+    <div class="contrast-cell" style="background:#3b2a2a;">
+      <span class="sample-text" style="color:#d3a774;">orange</span>
+      <span class="sample-small" style="color:#8e9e9b;">on deep_oak</span>
+    </div>
+    <div class="contrast-cell" style="background:#283e4f;">
+      <span class="sample-text" style="color:#8e9e9b;">cyan</span>
+      <span class="sample-small" style="color:#e9c5aa;">on blue</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>Mambo Heritage Palette</span>
+  <span>18 colors · Desert Earth + Dark Forest</span>
+</footer>
+
+</body>
+</html>
