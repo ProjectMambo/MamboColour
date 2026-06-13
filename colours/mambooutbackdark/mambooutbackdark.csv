@@ -1,0 +1,76 @@
+# =============================================================================
+# MAMBO OUTBACK ECLIPSE DARK PALETTE
+# An expanded dark mode spectrum preserving your original custom names.
+# Format: name,hex,alpha,category
+# =============================================================================
+
+# --- Deep Horizons (Inverted for Dark Mode Base) ---
+abyssal_bark,fdfaf2,ff,base     # Brightest cream (used as text/accent in dark mode)
+burnt_charcoal,ebdcd0,ff,base   # Soft parchment accent
+canyon_floor,4a3532,ff,ui       # Medium dark structural UI layer
+crushed_clay,2b2120,ff,ui       # Dark UI card layer
+dusty_parchment,141a17,ff,base  # Ultimate deep background base
+river_silt,1c1615,ff,ui        # Secondary deep background base
+
+# --- Scorched Earth (Reds & Terracottas - Shifted to Neon/Glow) ---
+magma_dust,ff6b57,ff,accent     # Vibrant hot magma
+wildfire,e65235,ff,accent       # Intense brushfire orange-red
+rusty_canyon,cc4329,ff,accent   # Vivid terracotta
+baked_brick,b3331b,ff,accent    # Rich mid-tone red
+crimson_creek,8c1d0e,ff,accent  # Deep blood red border/accent
+
+# --- Twilight Canyon (Muted Roses & Plums) ---
+desert_rose,d98c84,ff,bridge
+dusty_mauve,bf8087,ff,bridge
+wild_plum,9e5b68,ff,accent
+berry_bramble,803f50,ff,accent
+dusk_shadow,5c2336,ff,accent
+
+# --- Outback Sunsets (Oranges & Coppers) ---
+apricot_dust,ffa775,ff,accent
+canyon_flash,ffb68a,ff,accent
+burnt_ochre,e08a4f,ff,accent
+iron_oxide,bd6c36,ff,accent
+ember_glow,964e1d,ff,accent
+
+# --- Desert Gold & Grasses (Yellows & Straws) ---
+tumbleweed,ffd794,ff,accent
+spinifex_gold,fce3ab,ff,accent
+dry_straw,e0b267,ff,accent
+roasted_cumin,bd8f42,ff,accent
+savannah_dusk,946b28,ff,accent
+
+# --- Sage & Scrub (Light/Olive Greens) ---
+desert_sage,b5ccaa,ff,accent
+pale_spinifex,cbdcc0,ff,accent
+dusty_olive,99b088,ff,accent
+lichen_crust,7a9466,ff,accent
+dry_moss,5d7549,ff,accent
+
+# --- Deep Canopy (Dark Forest Greens) ---
+eucalyptus_leaf,799984,ff,accent
+overgrown_fern,5e806a,ff,accent
+swamp_murk,44614f,ff,accent
+ancient_pine,2d4536,ff,accent
+midnight_forest,1b2e22,ff,accent
+
+# --- Riverbed & Shale (Teals & Cyans) ---
+shale_green,9cbab3,ff,bridge
+river_ooze,7da199,ff,bridge
+deep_teal,538279,ff,accent
+sunken_timber,366158,ff,accent
+flooded_creek,1f423b,ff,accent
+
+# --- Stormy Skies (Blues & Slates) ---
+outback_sky,7fa0bd,ff,accent
+eucalyptus_smoke,9bbaed,ff,accent
+bluestone,577894,ff,accent
+storm_canopy,3d5b73,ff,accent
+night_monsoon,263f54,ff,accent
+
+# --- Earth Typo & Muted Tones (Shifted to High-Contrast Light Tones) ---
+fossil_bone,1c221e,ff,text      # Used as deep accents or reversed text bases
+weathered_wood,3d2e24,ff,text
+termite_mound,665242,ff,text
+dried_bark,bdae9d,ff,text       # Muted body text
+charred_root,ded3c5,ff,text     # Primary crisp body text
