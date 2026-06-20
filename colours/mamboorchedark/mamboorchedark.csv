@@ -1,28 +1,28 @@
 # =============================================================================
-# MAMBO ORCHE DARK PALETTE (Volcanic Slate Revision)
-# A crisp dark mode inspired by cool volcanic rock and deep forest shadows.
+# MAMBO ORCHE DARK PALETTE
+# A crisp dark mode inspired by warm volcanic rock and deep forest shadows.
 # Format: name,hex,alpha,category
 # =============================================================================
 
-# --- Base & Backgrounds (Crisp, Cool Volcanic Base) ---
-bg,141816,ff,base          # Volcanic charcoal/deep slate (Replaces the muddy brown)
-bg_surface,1F2522,ff,ui    # Weathered stone layer for cards, sidebars, and inputs
-border,38423E,ff,ui        # Muted slate-green divider line to anchor UI elements
+# --- Base & Backgrounds (Warm Charcoal & Stone) ---
+bg,181615,ff,base          # Volcanic charcoal and deep slate base
+bg_surface,24201E,ff,ui    # Weathered stone layer for cards, sidebars, and inputs
+border,3D3633,ff,ui        # Muted slate divider line to anchor UI elements
 
 # --- Text & Typography (Warm Alabaster Glow) ---
-fg,FAF7F2,ff,text          # Your original warm alabaster/cream for stark contrast
+fg,FAF7F2,ff,text          # Warm alabaster cream for stark contrast
 fg_muted,D5C9B8,ff,text    # Soft, desaturated sand tone for secondary text
-comment,8A9A86,ff,text     # Muted sage-tinted hue for hints and code blocks
+comment,969085,ff,text     # Muted earthy tone for hints and code blocks
 
-# --- Primary Brand Accents (The Desert Earth - Brightened for Dark UI) ---
-brand,D44B36,ff,accent     # Elevated terracotta red (Pops beautifully off the dark slate)
-brand_hover,A93622,ff,ui   # Your original Red - acts perfectly as a rich hover state
+# --- Primary Brand Accents (The Desert Earth) ---
+brand,D44B36,ff,accent     # Elevated terracotta red for high visibility
+brand_hover,A93622,ff,ui   # Rich red hover state
 
 # --- Secondary & Interactive (The Dark Forest) ---
-interactive,6E856B,ff,ui   # Vibrant pale spinifex green for visible navigation/links
-interactive_hover,5C705A,ff,ui # Your original Green - operates as the deeper hover state
+interactive,7A8574,ff,ui   # Pale spinifex green for visible navigation and links
+interactive_hover,64705E,ff,ui # Deep green hover state
 
 # --- Feedback & Status (Used Sparingly) ---
-success,5C705A,ff,status   # Green
+success,64705E,ff,status   # Green
 warning,D3A774,ff,status   # Orange/Gold
 error,D44B36,ff,status     # Red
