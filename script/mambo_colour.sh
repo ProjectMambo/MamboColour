@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# parse - Generate theme config files from Mambo colour CSVs
-# Usage: parse <theme> <format> [-o <output_dir>]
+# mbcolor - Generate theme config files from Mambo colour CSVs
+# Usage: mbcolor <theme> <format> [-o <output_dir>]
 
 # ── Color codes ───────────────────────────────────────────────────────────────
 GREEN='\033[0;32m'
@@ -15,7 +15,7 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 usage() {
     echo -e "
 ${BLUE}Usage:${NC}
-  parse <theme> <format> [-o <output_dir>]
+  mbcolor <theme> <format> [-o <output_dir>]
 
 ${BLUE}Arguments:${NC}
   theme     Theme name — with or without the ${GREEN}mambo${NC} prefix
@@ -27,9 +27,9 @@ ${BLUE}Options:${NC}
   -h        Show this help message
 
 ${BLUE}Examples:${NC}
-  parse rose hyprland
-  parse mamborose waybar -o ~/.config/waybar/themes
-  parse sky tailwind -o ~/themes/out
+  mbcolor rose hyprland
+  mbcolor mamborose waybar -o ~/.config/waybar/themes
+  mbcolor sky tailwind -o ~/themes/out
 "
     exit 0
 }
@@ -80,9 +80,9 @@ fi
 
 # ── Resolve output path ───────────────────────────────────────────────────────
 case "$FORMAT" in
-    hyprland) EXT="conf" ;;
-    waybar)   EXT="css"  ;;
-    tailwind) EXT="css"  ;;
+    hyprland) EXT="lua" ;;
+    waybar)   EXT="css" ;;
+    tailwind) EXT="css" ;;
 esac
 
 # Default output: theme's own folder
@@ -122,8 +122,8 @@ convert_color() {
 # ── Parsers ───────────────────────────────────────────────────────────────────
 parse_hyprland() {
     local name=$1 hex=$2 alpha=$3
-    echo "\$$name = rgb($hex)"
-    echo "\$${name}_a = rgba($hex$alpha)"
+    echo "M.$name = \"rgb($hex)\""
+    echo "M.${name}_a = \"rgba($hex$alpha)\""
 }
 
 parse_waybar() {
@@ -146,12 +146,34 @@ tailwind_selector() {
     esac
 }
 
+# ── Wrapper Logic ─────────────────────────────────────────────────────────────
+# Usage: wrap_output <format> <action: open/close>
+wrap_output() {
+    local fmt=$1 action=$2
+    case "$fmt" in
+        hyprland)
+            [[ "$action" == "open" ]] && echo "local M = {}"
+            [[ "$action" == "close" ]] && echo "return M"
+            ;;
+        tailwind)
+            local selector
+            case "$THEME" in
+                *light) selector='[data-theme="light"]' ;;
+                *dark)  selector='[data-theme="dark"]'  ;;
+                *)      selector=':root'                ;;
+            esac
+            [[ "$action" == "open" ]] && echo "$selector {"
+            [[ "$action" == "close" ]] && echo "}"
+            ;;
+        waybar)
+            :
+            ;;
+    esac
+}
+
 # ── Generate output ───────────────────────────────────────────────────────────
 {
-    if [[ "$FORMAT" == "tailwind" ]]; then
-        SELECTOR=$(tailwind_selector)
-        echo "$SELECTOR {"
-    fi
+    wrap_output "$FORMAT" "open"
 
     grep -v '^#' "$SOURCE" |        # strip comments
     grep '[^[:space:]]' |           # strip blank lines
@@ -159,7 +181,7 @@ tailwind_selector() {
         "parse_${FORMAT}" "$name" "$hex" "$alpha"
     done
 
-    [[ "$FORMAT" == "tailwind" ]] && echo "}"
+    wrap_output "$FORMAT" "close"
 } > "$DEST"
 
 [[ "$FORMAT" == "tailwind" ]] && echo -e "  Selector: ${YELLOW}$(tailwind_selector)${NC}"
