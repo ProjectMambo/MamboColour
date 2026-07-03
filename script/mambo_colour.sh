@@ -55,8 +55,8 @@ THEME="${RAW_THEME#mambo}"
 
 # ── Validate format ───────────────────────────────────────────────────────────
 case "$FORMAT" in
-    hyprland|waybar|tailwind) ;;
-    *) echo -e "${RED}[!] Invalid format '${FORMAT}'. Choose: hyprland | waybar | tailwind${NC}" >&2; exit 1 ;;
+    hyprlua|hyprlang|waybar|tailwind) ;;
+    *) echo -e "${RED}[!] Invalid format '${FORMAT}'. Choose: hyprlua | hyprland | waybar | tailwind${NC}" >&2; exit 1 ;;
 esac
 
 # ── Locate theme directory ────────────────────────────────────────────────────
@@ -80,7 +80,8 @@ fi
 
 # ── Resolve output path ───────────────────────────────────────────────────────
 case "$FORMAT" in
-    hyprland) EXT="lua" ;;
+    hyprlua)  EXT="lua" ;;
+    hyprlang) EXT="conf" ;;
     waybar)   EXT="css" ;;
     tailwind) EXT="css" ;;
 esac
@@ -120,10 +121,16 @@ convert_color() {
 }
 
 # ── Parsers ───────────────────────────────────────────────────────────────────
-parse_hyprland() {
+parse_hyprlua() {
     local name=$1 hex=$2 alpha=$3
     echo "M.$name = \"rgb($hex)\""
     echo "M.${name}_a = \"rgba($hex$alpha)\""
+}
+
+parse_hyprlang() {
+    local name=$1 hex=$2 alpha=$3
+    echo "\$$name = rgb($hex)"
+    echo "\$${name}_a = rgba(${hex}${alpha})"
 }
 
 parse_waybar() {
@@ -151,9 +158,12 @@ tailwind_selector() {
 wrap_output() {
     local fmt=$1 action=$2
     case "$fmt" in
-        hyprland)
+        hyprlua)
             [[ "$action" == "open" ]] && echo "local M = {}"
             [[ "$action" == "close" ]] && echo "return M"
+            ;;
+        hyprlang)
+            [[ "$action" == "open" ]] && echo "# Auto-generated theme colors"
             ;;
         tailwind)
             local selector
