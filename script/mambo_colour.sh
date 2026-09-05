@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
 # mbcolor - Generate theme config files from Mambo colour CSVs
-# Usage: mbcolor <theme> <format> [-o <output_dir>]
+# Usage: mbcolor <theme> <format> [-o|--out <output_dir>]
 
 # ── Color codes ───────────────────────────────────────────────────────────────
 GREEN='\033[0;32m'
@@ -9,33 +11,47 @@ BLUE='\033[0;34m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
 # ── Help ──────────────────────────────────────────────────────────────────────
 usage() {
     echo -e "
 ${BLUE}Usage:${NC}
-  mbcolor <theme> <format> [-o <output_dir>]
+  mbcolor <theme> <format> [-o|--out <output_dir>]
 
 ${BLUE}Arguments:${NC}
   theme     Theme name — with or without the ${GREEN}mambo${NC} prefix
-              e.g. ${GREEN}rose${NC} or ${GREEN}mamborose${NC}
-  format    Output format: ${GREEN}hyprland${NC} | ${GREEN}waybar${NC} | ${GREEN}tailwind${NC}
+              ${GREEN}orchelight${NC} | ${GREEN}orchedark${NC} | ${GREEN}outbacklight${NC} | ${GREEN}outbackdark${NC}
+  format    Output format: ${GREEN}hyprlua${NC} | ${GREEN}hyprlang${NC} | ${GREEN}waybar${NC} | ${GREEN}css${NC}
+            Compatibility alias: ${GREEN}tailwind${NC} (same output as css)
 
 ${BLUE}Options:${NC}
-  -o <dir>  Output directory (default: theme's own folder)
-  -h        Show this help message
+  -o, --out <dir>  Output directory (default: theme's own folder)
+  -h, --help       Show this help message
 
 ${BLUE}Examples:${NC}
-  mbcolor rose hyprland
-  mbcolor mamborose waybar -o ~/.config/waybar/themes
-  mbcolor sky tailwind -o ~/themes/out
+  mbcolor orchedark hyprlua
+  mbcolor mamboorchelight waybar --out ~/.config/waybar
+  mbcolour mambooutbackdark css -o ~/themes/out
 "
-    exit 0
 }
 
 # ── Argument parsing ──────────────────────────────────────────────────────────
-[[ $# -lt 2 || "$1" == "-h" || "$1" == "--help" ]] && usage
+if [[ $# -eq 0 ]]; then
+    usage >&2
+    exit 2
+fi
+
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    usage
+    exit 0
+fi
+
+if [[ $# -lt 2 ]]; then
+    echo -e "${RED}[!] Theme and format are required.${NC}" >&2
+    usage >&2
+    exit 2
+fi
 
 RAW_THEME=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 FORMAT=$(echo "$2" | tr '[:upper:]' '[:lower:]')
@@ -44,25 +60,38 @@ shift 2
 DEST_DIR=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        -o) DEST_DIR="$2"; shift 2 ;;
-        -h|--help) usage ;;
-        *) echo -e "${RED}[!] Unknown option: $1${NC}" >&2; exit 1 ;;
+        -o|--out)
+            if [[ $# -lt 2 || -z "${2:-}" || "${2:-}" == -* ]]; then
+                echo -e "${RED}[!] $1 requires an output directory.${NC}" >&2
+                exit 2
+            fi
+            DEST_DIR="$2"
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}[!] Unknown option: $1${NC}" >&2
+            exit 2
+            ;;
     esac
 done
 
-# Strip leading "mambo" prefix so both "rose" and "mamborose" resolve the same
+# Strip the optional leading "mambo" prefix.
 THEME="${RAW_THEME#mambo}"
 
 # ── Validate format ───────────────────────────────────────────────────────────
 case "$FORMAT" in
-    hyprlua|hyprlang|waybar|tailwind) ;;
-    *) echo -e "${RED}[!] Invalid format '${FORMAT}'. Choose: hyprlua | hyprland | waybar | tailwind${NC}" >&2; exit 1 ;;
+    hyprlua|hyprlang|waybar|css|tailwind) ;;
+    *) echo -e "${RED}[!] Invalid format '${FORMAT}'. Choose: hyprlua | hyprlang | waybar | css${NC}" >&2; exit 2 ;;
 esac
 
 # ── Locate theme directory ────────────────────────────────────────────────────
-# Accepts both "mamborose" and "rose" folder names
+# Accept prefixed and unprefixed theme folder names.
 THEME_DIR=$(find "$SCRIPT_DIR/../colours" -maxdepth 1 -type d \
-    \( -iname "mambo${THEME}" -o -iname "${THEME}" \) | head -n 1)
+    \( -iname "mambo${THEME}" -o -iname "${THEME}" \) -print -quit)
 
 if [[ -z "$THEME_DIR" ]]; then
     echo -e "${RED}[!] Theme '${THEME}' not found in colours/.${NC}" >&2
@@ -71,7 +100,7 @@ fi
 
 # ── Locate CSV ────────────────────────────────────────────────────────────────
 SOURCE=$(find "$THEME_DIR" -maxdepth 1 -type f \
-    \( -iname "mambo${THEME}.csv" -o -iname "${THEME}.csv" \) | head -n 1)
+    \( -iname "mambo${THEME}.csv" -o -iname "${THEME}.csv" \) -print -quit)
 
 if [[ -z "$SOURCE" ]]; then
     echo -e "${RED}[!] No CSV found in '${THEME_DIR}'.${NC}" >&2
@@ -82,8 +111,7 @@ fi
 case "$FORMAT" in
     hyprlua)  EXT="lua" ;;
     hyprlang) EXT="conf" ;;
-    waybar)   EXT="css" ;;
-    tailwind) EXT="css" ;;
+    waybar|css|tailwind) EXT="css" ;;
 esac
 
 # Default output: theme's own folder
@@ -139,13 +167,18 @@ parse_waybar() {
     echo "@define-color $name rgba($R,$G,$B,$A);"
 }
 
-parse_tailwind() {
+parse_css() {
     local name=$1 hex=$2 alpha=$3
     echo "  --$name: #$hex;"
 }
 
-# ── Tailwind selector: detect light/dark from theme name ─────────────────────
-tailwind_selector() {
+# Compatibility alias retained for existing consumers.
+parse_tailwind() {
+    parse_css "$@"
+}
+
+# ── CSS selector: detect light/dark from theme name ──────────────────────────
+css_selector() {
     case "$THEME" in
         *light)     echo '[data-theme="light"]' ;;
         *dark)      echo '[data-theme="dark"]'  ;;
@@ -159,21 +192,29 @@ wrap_output() {
     local fmt=$1 action=$2
     case "$fmt" in
         hyprlua)
-            [[ "$action" == "open" ]] && echo "local M = {}"
-            [[ "$action" == "close" ]] && echo "return M"
+            if [[ "$action" == "open" ]]; then
+                echo "local M = {}"
+            elif [[ "$action" == "close" ]]; then
+                echo "return M"
+            fi
             ;;
         hyprlang)
-            [[ "$action" == "open" ]] && echo "# Auto-generated theme colors"
+            if [[ "$action" == "open" ]]; then
+                echo "# Auto-generated theme colors"
+            fi
             ;;
-        tailwind)
+        css|tailwind)
             local selector
             case "$THEME" in
                 *light) selector='[data-theme="light"]' ;;
                 *dark)  selector='[data-theme="dark"]'  ;;
                 *)      selector=':root'                ;;
             esac
-            [[ "$action" == "open" ]] && echo "$selector {"
-            [[ "$action" == "close" ]] && echo "}"
+            if [[ "$action" == "open" ]]; then
+                echo "$selector {"
+            elif [[ "$action" == "close" ]]; then
+                echo "}"
+            fi
             ;;
         waybar)
             :
@@ -194,7 +235,9 @@ wrap_output() {
     wrap_output "$FORMAT" "close"
 } > "$DEST"
 
-[[ "$FORMAT" == "tailwind" ]] && echo -e "  Selector: ${YELLOW}$(tailwind_selector)${NC}"
+if [[ "$FORMAT" == "css" || "$FORMAT" == "tailwind" ]]; then
+    echo -e "  Selector: ${YELLOW}$(css_selector)${NC}"
+fi
 
 echo -e "${GREEN}[+] Done! →${NC} ${DEST}"
 echo -e "${BLUE}──────────────────────────────────────────${NC}"
