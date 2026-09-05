@@ -1,40 +1,90 @@
 # MamboColour
+
 <p align="left">
   <img src="https://img.shields.io/badge/CSV-7289DA?style=flat-square" alt="CSV" />
   <img src="https://img.shields.io/badge/Shell_Script-121011?style=flat-square&logo=gnu-bash&logoColor=white" alt="Shell Script" />
 </p>
 <p align="left">
-  <img src="https://img.shields.io/badge/Maintenance-Active-brightgreen?style=flat-square" />
-  <img src="https://img.shields.io/github/last-commit/ProjectMambo/MamboColour?style=flat-square&color=7a5fff" />
-  <img src="https://img.shields.io/github/repo-size/ProjectMambo/MamboColour?style=flat-square&color=yellow" />
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/ProjectMambo/MamboColour?style=flat-square&color=orange" /></a>
+  <img src="https://img.shields.io/badge/Maintenance-Active-brightgreen?style=flat-square" alt="Maintenance status: active" />
+  <img src="https://img.shields.io/github/last-commit/ProjectMambo/MamboColour?style=flat-square&color=7a5fff" alt="Last commit" />
+  <img src="https://img.shields.io/github/repo-size/ProjectMambo/MamboColour?style=flat-square&color=yellow" alt="Repository size" />
+  <a href="../LICENSE"><img src="https://img.shields.io/github/license/ProjectMambo/MamboColour?style=flat-square&color=orange" alt="License" /></a>
 </p>
 
-A modern and premium colour palette collection with parsers for different use case.
+MamboColour is Project Mambo's shared colour source. It stores light and dark palettes as readable CSV files and converts them into formats consumed by Hyprland, Hyprland Lua, Waybar, and CSS applications.
 
-## Features
-- A set of themes for consistent **styling** across different apps.
-- Parsers to output themes in correct **format**.
-- Custom **command** `mambogen` for easier parsing.
+## Start here
 
-## Getting Started
+| Goal | Document or command |
+|---|---|
+| Install the `mbcolor` command | [Local setup](#local-setup) |
+| Generate a theme | [Command reference](Commands.md) |
+| Inspect the source palettes | [`colours/`](../colours/) |
 
-### Quick Start
-Clone and run the install script:
+## Current palettes
+
+| Family | Variants | Purpose |
+|---|---|---|
+| MamboOrche | `mamboorchelight`, `mamboorchedark` | Compact semantic UI palette for backgrounds, text, interaction, and status |
+| MamboOutback | `mambooutbacklight`, `mambooutbackdark` | Expanded accent spectrum for cards, data, illustrations, and themes |
+
+Each palette is a CSV file with `name,hex,alpha,category` records. Comment and blank lines are ignored by the generator.
+
+## Outputs
+
+`mbcolor` accepts palette names with or without the leading `mambo` prefix and writes one generated file:
+
+| Format | Extension | Output form |
+|---|---|---|
+| `hyprlua` | `.lua` | Lua module with `rgb(...)` and `rgba(...)` strings |
+| `hyprlang` | `.conf` | Hyprland variables |
+| `waybar` | `.css` | GTK `@define-color` declarations |
+| `tailwind` | `.css` | CSS custom properties under a light, dark, or root selector |
+
+Without `-o`, output is written beside the source CSV and will appear as a working-tree change. Use an explicit output directory for generated application files.
+
+## Local setup
+
+The scripts target a Linux environment with Bash and standard GNU command-line tools.
+
 ```bash
-# Clone the repository and navigate into the directory
-git clone https://github.com/ProjectMambo/MamboColour
+git clone https://github.com/ProjectMambo/MamboColour.git
 cd MamboColour
-# Make the installation script executable and run it
-chmod +x script/install.sh
 ./script/install.sh
 ```
 
-## Usage
-- **[Custom Commands](docs/Commands.md)** - A list of custom commands for parsing palettes.
+The installer creates `/usr/local/bin/mbcolor` and `/usr/local/bin/mbcolour` symlinks and may request `sudo` access.
 
-## Issues & Feedback
-Since this is our colour palettes, we are not looking for external pull requests. However, if you spot a bug or have a suggestion regarding the automation scripts, feel free to open an **Issue** to let me know!
+Generate a palette without installing the command:
+
+```bash
+./script/mambo_colour.sh mamboorchedark hyprlua -o /tmp/mambo-theme
+```
+
+## Repository layout
+
+```text
+colours/<palette>/<palette>.csv  source palettes
+script/mambo_colour.sh          generator and command-line interface
+script/install.sh               command symlink installer
+docs/                           command and project documentation
+```
+
+## Development checks
+
+There is no automated test or release workflow yet. Before committing generator changes, run a Bash syntax check and generate representative outputs outside the repository:
+
+```bash
+bash -n script/install.sh script/mambo_colour.sh
+./script/mambo_colour.sh mamboorchedark hyprlua -o /tmp/mambocolour-check
+./script/mambo_colour.sh mamboorchelight waybar -o /tmp/mambocolour-check
+./script/mambo_colour.sh mambooutbackdark tailwind -o /tmp/mambocolour-check
+```
+
+## Issues and feedback
+
+These palettes are maintained for Project Mambo, so external pull requests are not currently requested. Bug reports and generator suggestions are welcome as repository issues.
 
 ## License
-Distributed under the MIT License. See **[LICENSE](LICENSE)** for more information.
+
+Distributed under the MIT License. See **[LICENSE](../LICENSE)** for details.
