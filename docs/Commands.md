@@ -13,10 +13,10 @@ order: 10
 ## Syntax
 
 ```bash
-mbcolor <theme> <format> [-o <output-directory>]
+mbcolor <theme> <format> [-o|--out <output-directory>]
 ```
 
-Theme and format names are case-insensitive. The tables below reflect the active implementation; the built-in `--help` text still contains historical theme and format examples.
+Theme and format names are case-insensitive. Run `mbcolor --help` for the same interface summary in the terminal.
 
 ## Themes
 
@@ -36,26 +36,29 @@ The `mambo` prefix is optional, so `orchedark` and `mamboorchedark` resolve to t
 | `hyprlua` | `mambo<theme>.lua` | Lua module with normal and alpha colour values |
 | `hyprlang` | `mambo<theme>.conf` | Hyprland `$name` and `$name_a` variables |
 | `waybar` | `mambo<theme>.css` | GTK CSS `@define-color` declarations |
-| `tailwind` | `mambo<theme>.css` | CSS custom properties; the palette name selects light, dark, or root scope |
+| `css` | `mambo<theme>.css` | CSS custom properties; the palette name selects light, dark, or root scope |
+| `tailwind` | `mambo<theme>.css` | Compatibility alias with byte-identical `css` output |
 
 ## Output location
 
-Pass `-o` to choose a destination directory. The directory is created when needed.
+Pass `--out` to choose a destination directory. The directory is created when needed. `-o` is the short alias.
 
-If `-o` is omitted, the generated file is written into the source palette directory. That is useful while developing the generator but normally dirties the repository.
+If `--out` is omitted, the generated file is written into the source palette directory. That is useful while developing the generator but normally dirties the repository.
 
 ## Examples
 
 ```bash
 # Hyprland Lua module
-mbcolor mamboorchedark hyprlua -o ~/.config/hypr/themes
+mbcolor mamboorchedark hyprlua --out ~/.config/hypr/themes
 
 # Waybar GTK colours; the prefix is optional
-mbcolor orchelight waybar -o ~/.config/waybar
+mbcolor orchelight waybar --out ~/.config/waybar
 
 # CSS variables for a web project
-mbcolour mambooutbackdark tailwind -o ./styles/generated
+mbcolour mambooutbackdark css --out ./styles/generated
 ```
+
+Existing consumers may continue to pass `tailwind`; it produces exactly the same file as `css`.
 
 ## Source CSV contract
 
@@ -71,3 +74,12 @@ name,hex,alpha,category
 - `category` documents the semantic group and is not emitted.
 
 The current parser assumes valid source rows. Validate new palette records by generating every supported format before committing them.
+
+## Verification
+
+```bash
+bash -n script/install.sh script/mambo_colour.sh script/test.sh
+./script/test.sh
+```
+
+The regression script covers both installed command names, every theme and accepted format name, `css`/`tailwind` equivalence, usage errors, and safe installer collisions. It is not currently run by CI.

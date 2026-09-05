@@ -17,6 +17,7 @@ MamboColour is Project Mambo's shared colour source. It stores light and dark pa
 
 | Goal | Document or command |
 |---|---|
+| Read the canonical Wiki documentation | [projectmambo.org/mambocolour/](https://projectmambo.org/mambocolour/) |
 | Install the `mbcolor` command | [Local setup](#local-setup) |
 | Generate a theme | [Command reference](docs/Commands.md) |
 | Inspect the source palettes | [`colours/`](colours/) |
@@ -39,9 +40,10 @@ Each palette is a CSV file with `name,hex,alpha,category` records. Comment and b
 | `hyprlua` | `.lua` | Lua module with `rgb(...)` and `rgba(...)` strings |
 | `hyprlang` | `.conf` | Hyprland variables |
 | `waybar` | `.css` | GTK `@define-color` declarations |
-| `tailwind` | `.css` | CSS custom properties under a light, dark, or root selector |
+| `css` | `.css` | CSS custom properties under a light, dark, or root selector |
+| `tailwind` | `.css` | Compatibility alias that produces the same bytes as `css` |
 
-Without `-o`, output is written beside the source CSV and will appear as a working-tree change. Use an explicit output directory for generated application files.
+Without `--out`, output is written beside the source CSV and will appear as a working-tree change. Use an explicit output directory for generated application files. `-o` remains the short alias.
 
 ## Local setup
 
@@ -53,12 +55,17 @@ cd MamboColour
 ./script/install.sh
 ```
 
-The installer creates `/usr/local/bin/mbcolor` and `/usr/local/bin/mbcolour` symlinks and may request `sudo` access.
+The installer targets `/usr/local/bin` by default. It creates both command symlinks, refuses to replace a non-symlink at either target, and uses `sudo` only when the destination directory is absent or not writable. Set `MAMBOCOLOUR_BIN_DIR` to use another bin directory; create that directory first to avoid `sudo`:
+
+```bash
+mkdir -p "$HOME/.local/bin"
+MAMBOCOLOUR_BIN_DIR="$HOME/.local/bin" ./script/install.sh
+```
 
 Generate a palette without installing the command:
 
 ```bash
-./script/mambo_colour.sh mamboorchedark hyprlua -o /tmp/mambo-theme
+./script/mambo_colour.sh mamboorchedark hyprlua --out /tmp/mambo-theme
 ```
 
 ## Repository layout
@@ -67,18 +74,20 @@ Generate a palette without installing the command:
 colours/<palette>/<palette>.csv  source palettes
 script/mambo_colour.sh          generator and command-line interface
 script/install.sh               command symlink installer
+script/test.sh                  CLI and installer regression checks
 docs/                           command and project documentation
 ```
 
 ## Development checks
 
-There is no automated test or release workflow yet. Before committing generator changes, run a Bash syntax check and generate representative outputs outside the repository:
+The repository has focused local CLI and installer checks, but no CI or release workflow. Before committing generator changes, run:
 
 ```bash
-bash -n script/install.sh script/mambo_colour.sh
-./script/mambo_colour.sh mamboorchedark hyprlua -o /tmp/mambocolour-check
-./script/mambo_colour.sh mamboorchelight waybar -o /tmp/mambocolour-check
-./script/mambo_colour.sh mambooutbackdark tailwind -o /tmp/mambocolour-check
+bash -n script/install.sh script/mambo_colour.sh script/test.sh
+./script/test.sh
+./script/mambo_colour.sh mambooutbackdark css --out /tmp/mambocolour-check
+git diff --check
+git status --short
 ```
 
 ## Issues and feedback

@@ -27,4 +27,4 @@ The palette source stays application-neutral. Consumers generate the format they
 
 ## Current status
 
-The generator and all four palettes are in active use. Generation is deterministic for a given CSV, but the repository does not yet have automated tests, CI, or a release pipeline.
+The generator and all four palettes are in active use. A focused local regression script checks the CLI and installer, but the repository does not yet have CI or a release pipeline.
