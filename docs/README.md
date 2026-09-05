@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/Maintenance-Active-brightgreen?style=flat-square" alt="Maintenance status: active" />
   <img src="https://img.shields.io/github/last-commit/ProjectMambo/MamboColour?style=flat-square&color=7a5fff" alt="Last commit" />
   <img src="https://img.shields.io/github/repo-size/ProjectMambo/MamboColour?style=flat-square&color=yellow" alt="Repository size" />
-  <a href="../LICENSE"><img src="https://img.shields.io/github/license/ProjectMambo/MamboColour?style=flat-square&color=orange" alt="License" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/ProjectMambo/MamboColour?style=flat-square&color=orange" alt="License" /></a>
 </p>
 
 MamboColour is Project Mambo's shared colour source. It stores light and dark palettes as readable CSV files and converts them into formats consumed by Hyprland, Hyprland Lua, Waybar, and CSS applications.
@@ -20,7 +20,7 @@ MamboColour is Project Mambo's shared colour source. It stores light and dark pa
 | Read the canonical Wiki documentation | [projectmambo.org/mambocolour/](https://projectmambo.org/mambocolour/) |
 | Install the `mbcolor` command | [Local setup](#local-setup) |
 | Generate a theme | [Command reference](Commands.md) |
-| Inspect the source palettes | [`colours/`](../colours/) |
+| Inspect the source palettes | [`colours/`](colours/) |
 
 ## Current palettes
 
@@ -96,4 +96,4 @@ These palettes are maintained for Project Mambo, so external pull requests are n
 
 ## License
 
-Distributed under the MIT License. See **[LICENSE](../LICENSE)** for details.
+Distributed under the MIT License. See **[LICENSE](LICENSE)** for details.
