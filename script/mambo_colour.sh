@@ -5,11 +5,15 @@ set -euo pipefail
 # Usage: mbcolor <theme> <format> [-o|--out <output_dir>]
 
 # ── Color codes ───────────────────────────────────────────────────────────────
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-BLUE='\033[0;34m'
-YELLOW='\033[0;33m'
-NC='\033[0m'
+if [[ -n "${NO_COLOR+x}" ]]; then
+    GREEN='' RED='' BLUE='' YELLOW='' NC=''
+else
+    GREEN='\033[0;32m'
+    RED='\033[0;31m'
+    BLUE='\033[0;34m'
+    YELLOW='\033[0;33m'
+    NC='\033[0m'
+fi
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
@@ -122,6 +126,17 @@ fi
 mkdir -p "$DEST_DIR"
 DEST="$DEST_DIR/mambo${THEME}.${EXT}"
 
+if [[ -L "$DEST" || ( -e "$DEST" && ! -f "$DEST" ) ]]; then
+    echo -e "${RED}[!] Refusing unsafe output target: ${DEST}${NC}" >&2
+    exit 1
+fi
+
+TEMP_OUTPUT=$(mktemp "${DEST}.tmp.XXXXXX")
+cleanup() {
+    rm -f -- "$TEMP_OUTPUT"
+}
+trap cleanup EXIT
+
 # ── Print summary ─────────────────────────────────────────────────────────────
 echo -e "${BLUE}──────────────────────────────────────────${NC}"
 echo -e "  Theme:  ${GREEN}mambo${THEME}${NC}"
@@ -223,17 +238,39 @@ wrap_output() {
 }
 
 # ── Generate output ───────────────────────────────────────────────────────────
-{
+trim() {
+    local value=$1
+    value="${value#"${value%%[![:space:]]*}"}"
+    value="${value%"${value##*[![:space:]]}"}"
+    printf '%s' "$value"
+}
+
+generate_output() {
     wrap_output "$FORMAT" "open"
 
-    grep -v '^#' "$SOURCE" |        # strip comments
-    grep '[^[:space:]]' |           # strip blank lines
-    while IFS=, read -r name hex alpha cat || [[ -n "$name" ]]; do
+    local line=0 raw name hex alpha category extra
+    while IFS= read -r raw || [[ -n "$raw" ]]; do
+        ((line += 1))
+        [[ "$raw" =~ ^[[:space:]]*(#|$) ]] && continue
+        raw=${raw%%#*}
+        IFS=, read -r name hex alpha category extra <<< "$raw"
+        name=$(trim "$name")
+        hex=$(trim "$hex")
+        alpha=$(trim "$alpha")
+        category=$(trim "$category")
+        if [[ -n "${extra:-}" || ! "$name" =~ ^[a-z][a-z0-9_]*$ || ! "$hex" =~ ^[0-9A-Fa-f]{6}$ || ! "$alpha" =~ ^[0-9A-Fa-f]{2}$ || -z "$category" ]]; then
+            echo -e "${RED}[!] Invalid palette row ${SOURCE}:${line}.${NC}" >&2
+            return 1
+        fi
         "parse_${FORMAT}" "$name" "$hex" "$alpha"
-    done
+    done < "$SOURCE"
 
     wrap_output "$FORMAT" "close"
-} > "$DEST"
+}
+
+generate_output > "$TEMP_OUTPUT"
+mv -f -- "$TEMP_OUTPUT" "$DEST"
+trap - EXIT
 
 if [[ "$FORMAT" == "css" || "$FORMAT" == "tailwind" ]]; then
     echo -e "  Selector: ${YELLOW}$(css_selector)${NC}"
