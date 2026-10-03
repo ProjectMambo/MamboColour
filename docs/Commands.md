@@ -1,12 +1,12 @@
 ---
-title: MamboColour command reference
+title: Command reference
 description: Generate application colour files from the MamboColour CSV palettes.
 order: 10
 ---
 
 ::page{layout="docs" width="normal" sidebar=true}
 
-# MamboColour command reference
+# Command reference
 
 `mbcolor` converts one source palette into one application-specific file. `mbcolour` is an equivalent installed alias.
 
