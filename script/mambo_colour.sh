@@ -269,6 +269,11 @@ generate_output() {
 }
 
 generate_output > "$TEMP_OUTPUT"
+if [[ -e "$DEST" ]]; then
+    chmod --reference="$DEST" "$TEMP_OUTPUT"
+else
+    chmod 0644 "$TEMP_OUTPUT"
+fi
 mv -f -- "$TEMP_OUTPUT" "$DEST"
 trap - EXIT
 
