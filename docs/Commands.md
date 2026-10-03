@@ -1,12 +1,12 @@
 ---
-title: MamboColour Command Reference
+title: MamboColour command reference
 description: Generate application colour files from the MamboColour CSV palettes.
 order: 10
 ---
 
 ::page{layout="docs" width="normal" sidebar=true}
 
-# MamboColour Command Reference
+# MamboColour command reference
 
 `mbcolor` converts one source palette into one application-specific file. `mbcolour` is an equivalent installed alias.
 
@@ -45,6 +45,8 @@ Pass `--out` to choose a destination directory. The directory is created when ne
 
 If `--out` is omitted, the generated file is written into the source palette directory. That is useful while developing the generator but normally dirties the repository.
 
+The command validates the complete source before replacing output. It renders to a temporary file in the destination directory, then atomically replaces a regular destination. A symlink, directory, device, or other non-regular target is rejected so the command cannot write through an unexpected path. A failed validation leaves an existing destination unchanged.
+
 ## Examples
 
 ```bash
@@ -60,6 +62,37 @@ mbcolour mambooutbackdark css --out ./styles/generated
 
 Existing consumers may continue to pass `tailwind`; it produces exactly the same file as `css`.
 
+Set `NO_COLOR` to any value when logs must not contain ANSI styling:
+
+```bash
+NO_COLOR=1 mbcolor orchedark css --out ./styles/generated
+```
+
+## Install and remove
+
+Install into a user-owned command directory:
+
+```bash
+mkdir -p "$HOME/.local/bin"
+MAMBOCOLOUR_BIN_DIR="$HOME/.local/bin" ./script/install.sh
+```
+
+Remove the same links:
+
+```bash
+MAMBOCOLOUR_BIN_DIR="$HOME/.local/bin" ./script/install.sh --uninstall
+```
+
+Both operations inspect `mbcolor` and `mbcolour` before mutation. They proceed only when each existing target is a link to this checkout. Removal leaves the source palettes and generated consumer files unchanged.
+
+## Exit status
+
+| Status | Meaning |
+|---:|---|
+| `0` | Help, installation, removal, or generation succeeded |
+| `2` | Command-line usage is invalid |
+| other non-zero | A source, target, palette row, tool, or filesystem operation failed |
+
 ## Source CSV contract
 
 Each non-comment row has four comma-separated fields:
@@ -73,13 +106,13 @@ name,hex,alpha,category
 - `alpha` is a two-digit hexadecimal alpha value.
 - `category` documents the semantic group and is not emitted.
 
-The current parser assumes valid source rows. Validate new palette records by generating every supported format before committing them.
+Names must be lowercase identifiers containing letters, digits, and underscores; colours require six hexadecimal digits; alpha requires two hexadecimal digits; and category must be present. A fifth CSV field or malformed value fails the complete generation before the destination is replaced.
 
 ## Verification
 
 ```bash
-bash -n script/install.sh script/mambo_colour.sh script/test.sh
 ./script/test.sh
+../MamboDocs/script/check-repository.sh --strict .
 ```
 
-The regression script covers both installed command names, every theme and accepted format name, `css`/`tailwind` equivalence, usage errors, and safe installer collisions. It is not currently run by CI.
+The regression script covers shell syntax, both installed command names, owned-link installation and removal, every theme and accepted format name, `css`/`tailwind` equivalence, `NO_COLOR`, usage errors, invalid CSV, and safe output and installer collisions. It is not currently run by CI.
