@@ -1,8 +1,9 @@
 # MamboColour
 
 <p align="left">
+  <img src="https://img.shields.io/badge/Rust-000000?style=flat-square&logo=rust&logoColor=white" alt="Rust" />
+  <img src="https://img.shields.io/badge/Lua-2C2D72?style=flat-square&logo=lua&logoColor=white" alt="Lua" />
   <img src="https://img.shields.io/badge/CSV-7289DA?style=flat-square" alt="CSV" />
-  <img src="https://img.shields.io/badge/Shell_Script-121011?style=flat-square&logo=gnu-bash&logoColor=white" alt="Shell Script" />
 </p>
 <p align="left">
   <img src="https://img.shields.io/badge/Maintenance-Active-brightgreen?style=flat-square" alt="Maintenance status: active" />
@@ -11,122 +12,125 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/ProjectMambo/MamboColour?style=flat-square&color=orange" alt="License" /></a>
 </p>
 
-MamboColour is Project Mambo's shared colour source. It stores light and dark palettes as readable CSV files and converts them into formats consumed by Hyprland, Hyprland Lua, Waybar, and CSS applications.
+MamboColour is Project Mambo's shared theme boundary. One MamboOrche family provides light and dark UI roles plus accent colours through matching zero-package-dependency Rust and Lua APIs.
 
 ## Motivation
 
-Project Mambo applications need one reviewed colour vocabulary without maintaining separate hand-edited copies for every target format. MamboColour keeps the palette source application-neutral and makes each consumer's generated boundary reproducible.
+Applications should ask for a foreground, surface, status, or varied accent without knowing a palette's descriptive colour names or maintaining generated CSS and Lua copies. MamboColour keeps the reviewed values in four small CSV files and owns the stable access behavior, leaving each consumer responsible only for mapping those results into its framework.
 
 ## Status
 
-MamboColour is active on Linux. Four palettes and the `mbcolor`/`mbcolour` command are used by MamboDot and MamboSite. There is no package release or CI workflow yet; the repository's focused shell gate is authoritative.
+MamboColour is active and tested on Linux. The Rust crate is versioned as `0.1.0`; it is not published to a registry, and the Lua module is distributed from the same source checkout. There is no global command, generated-output interface, release artifact, or CI workflow.
 
-Temporary versioning exception:
-
-- **Requirement:** version installed commands and generated-asset contracts.
-- **Current behavior:** the command is installed from a Git checkout and has no SemVer release.
-- **Reason:** it is currently a Project Mambo maintainer tool, not a distributed package.
-- **Risk:** an arbitrary newer checkout may not match a consumer's reviewed generated files.
-- **Mitigation:** consumers record the provider commit and test the exact formats and tokens they consume; the current checked-in snapshots identify commit `66f0c26d6d6462c54c023a4842e49dc6fa0b3c1c`.
-- **Review:** remove this exception before the first external release or any incompatible command, token, filename, or output change.
+The previous `mbcolor`/`mbcolour` generator and the separate MamboOrche and MamboOutback theme names have been removed. Consumers should pin a reviewed repository commit while there is no package release and migrate directly to one of the APIs.
 
 ## User stories
 
-- As a theme maintainer, I can edit one readable palette and regenerate every supported target.
-- As a MamboDot maintainer, I can generate Hyprland, Lua, and Waybar files with stable names and tokens.
-- As a MamboSite maintainer, I can generate predictable CSS custom properties for the reviewed default theme.
-- As a cautious user, I can install or remove only MamboColour-owned command links and never write through a symlink output target.
+- As a UI consumer, I can request stable semantic roles such as `fg()` and `bg_surface()` without depending on concrete colour names.
+- As a card-list consumer, I can call `random()` for a varied accent such as a card's top line.
+- As a test or deterministic builder, I can call `random_seeded(seed)` and receive the same accent position in Rust and Lua.
+- As a palette maintainer, I can review four application-neutral CSV files and validate both language interfaces with one gate.
 
 ## Getting started
 
-The scripts require Linux, Bash, and standard GNU command-line tools. A user-owned installation needs no elevated privileges:
+Clone the source and run both API checks:
 
 ```bash
 git clone https://github.com/ProjectMambo/MamboColour.git
 cd MamboColour
-mkdir -p "$HOME/.local/bin"
-MAMBOCOLOUR_BIN_DIR="$HOME/.local/bin" ./script/install.sh
-mbcolor mamboorchedark hyprlua --out /tmp/mambo-theme
+./script/test.sh
 ```
+
+For Rust, pin a reviewed Git commit in the consumer's `Cargo.toml`, then select a scheme and role:
+
+```toml
+[dependencies]
+mambocolour = { git = "https://github.com/ProjectMambo/MamboColour.git", rev = "<MAMBOCOLOUR_COMMIT>" }
+```
+
+```rust
+use mambocolour::{Scheme, theme};
+
+let colours = theme(Scheme::Dark);
+let foreground = colours.ui().fg().hex();
+let card_line = colours.colour().random().hex();
+```
+
+For Lua, preserve the checkout's `lua/` and `palettes/` layout, add the module directory to `package.path`, and use the same model:
+
+```lua
+package.path = "vendor/MamboColour/lua/?.lua;" .. package.path
+local mambocolour = require("mambocolour")
+
+local colours = mambocolour.theme("dark")
+local foreground = colours:ui():fg():hex()
+local card_line = colours:colour():random():hex()
+```
+
+## Dependencies
+
+MamboColour deliberately has no third-party Rust crates, Lua modules, services, or runtime sibling-repository dependencies. The palette data is owned by this repository.
+
+| Dependency | Classification | Purpose | Provider, version pin, or source | Scope | Update path |
+|---|---|---|---|---|---|
+| Rust toolchain | Tool | Compile the crate and embed its CSV palettes | Rust `1.85` or newer, declared by `rust-version` in `Cargo.toml` | Build/test for Rust consumers and repository checks; built programs need no MamboColour files at runtime | Update `Cargo.toml`, compile on the minimum version, and run `./script/test.sh` |
+| Rust standard library | Platform | Provide caching, time-based selection, atomics, and string parsing | Supplied by the selected Rust toolchain | Build/runtime for the Rust API; no external crate or network access | Review with any Rust minimum-version change |
+| Lua runtime and standard libraries | Platform | Load CSV text and provide file, debug, string, number, and PRNG facilities | A `lua` executable with standard `debug`, `io`, `math`, and string libraries; validation currently uses Lua 5.5 | Runtime/test for the Lua API; no external Lua module or package manager | Run `script/test.lua` through `./script/test.sh` when changing the supported runtime |
+| Bash and standard Unix utilities | Tool | Orchestrate the combined local validation gate | Linux environment used by `script/test.sh` | Maintainer only; neither library API invokes the shell | Update `script/test.sh` and this declaration together |
+
+Rust consumers depend only on the compiled crate's public types; its four CSV files are embedded at compile time. Lua consumers depend on `lua/mambocolour.lua` and the repository-relative `palettes/mamboorche/` directory because the module reads those files on first use.
+
+## API
+
+Both languages expose a theme with two parts:
+
+```text
+theme(light | dark)
+├── ui()       role methods: fg(), bg(), brand(), success(), ...
+└── colour()   random(), random_seeded(seed), len()
+```
+
+`Colour` values expose `hex()` and `rgb()`. UI role methods are the compatibility boundary; their concrete values may change with a palette revision. Accent keys are not exposed, so a descriptive key can change without forcing consumers to change. Accent order is significant because `random_seeded()` maps the same seed to the same position across Rust and Lua.
+
+`random()` is for visual variation and is not cryptographically secure. `random_seeded()` is for repeatable assignment and tests; it does not alter shared PRNG state. See the [API reference](docs/API.md) for every role, language-specific signatures, file validation, and migration guidance.
+
+## Palettes
+
+MamboOrche is one theme family with UI and general-colour layers in light and dark schemes:
+
+| File | Consumer behavior |
+|---|---|
+| `palettes/mamboorche/ui-light.csv` | Light semantic UI roles |
+| `palettes/mamboorche/ui-dark.csv` | Dark semantic UI roles |
+| `palettes/mamboorche/colour-light.csv` | Light ordered accent pool |
+| `palettes/mamboorche/colour-dark.csv` | Dark ordered accent pool |
+
+Every file uses the `key,hex` schema. UI keys are stable API roles. Colour keys are maintainer-readable identities; API consumers select their values through `random()` or `random_seeded()` rather than by name.
 
 ## Documentation
 
-| Goal | Document or command |
+| Goal | Document or location |
 |---|---|
 | Read the canonical Wiki documentation | [projectmambo.org/mambocolour/](https://projectmambo.org/mambocolour/) |
-| Install the `mbcolor` command | [Local setup](#local-setup) |
-| Generate a theme | [Command reference](docs/Commands.md) |
-| Inspect the source palettes | [`colours/`](colours/) |
-
-## Current palettes
-
-| Family | Variants | Purpose |
-|---|---|---|
-| MamboOrche | `mamboorchelight`, `mamboorchedark` | Compact semantic UI palette for backgrounds, text, interaction, and status |
-| MamboOutback | `mambooutbacklight`, `mambooutbackdark` | Expanded accent spectrum for cards, data, illustrations, and themes |
-
-Each palette is a CSV file with `name,hex,alpha,category` records. Comment and blank lines are ignored by the generator.
-
-## Outputs
-
-`mbcolor` accepts palette names with or without the leading `mambo` prefix and writes one generated file:
-
-| Format | Extension | Output form |
-|---|---|---|
-| `hyprlua` | `.lua` | Lua module with `rgb(...)` and `rgba(...)` strings |
-| `hyprlang` | `.conf` | Hyprland variables |
-| `waybar` | `.css` | GTK `@define-color` declarations |
-| `css` | `.css` | CSS custom properties under a light, dark, or root selector |
-| `tailwind` | `.css` | Compatibility alias that produces the same bytes as `css` |
-
-Without `--out`, output is written beside the source CSV and will appear as a working-tree change. Use an explicit output directory for generated application files. `-o` remains the short alias.
-
-The generator validates every source row, writes a temporary sibling, and atomically replaces the regular destination only after generation succeeds. It refuses symlink and non-file targets. Set `NO_COLOR` to suppress ANSI styling.
-
-## Local setup
-
-The scripts target a Linux environment with Bash and standard GNU command-line tools.
-
-```bash
-git clone https://github.com/ProjectMambo/MamboColour.git
-cd MamboColour
-./script/install.sh
-```
-
-The installer targets `/usr/local/bin` by default. It creates both command symlinks, refuses any target not already owned by this checkout, and uses `sudo` only when the default system directory is absent or not writable. Set `MAMBOCOLOUR_BIN_DIR` to use another bin directory; the installer creates that explicit directory without `sudo` when permissions allow:
-
-```bash
-mkdir -p "$HOME/.local/bin"
-MAMBOCOLOUR_BIN_DIR="$HOME/.local/bin" ./script/install.sh
-```
-
-Generate a palette without installing the command:
-
-```bash
-./script/mambo_colour.sh mamboorchedark hyprlua --out /tmp/mambo-theme
-```
-
-Remove only the links owned by the same checkout:
-
-```bash
-MAMBOCOLOUR_BIN_DIR="$HOME/.local/bin" ./script/install.sh --uninstall
-```
-
-Installation and removal refuse ordinary files, broken links, and links to another command. Usage errors return `2`; missing sources, invalid palette data, and unsafe targets return another non-zero status; successful generation and help return `0`.
+| Integrate Rust or Lua | [API reference](docs/API.md) |
+| Inspect authoritative data | [`palettes/mamboorche/`](palettes/mamboorche/) |
+| Check package metadata and Rust minimum version | [`Cargo.toml`](Cargo.toml) |
 
 ## Project structure
 
 ```text
-colours/<palette>/<palette>.csv  source palettes
-script/mambo_colour.sh          generator and command-line interface
-script/install.sh               owned-link installer and uninstaller
-script/test.sh                  authoritative shell and behavior gate
-docs/                           command and project documentation
+Cargo.toml                  Rust package metadata and minimum toolchain
+src/lib.rs                  zero-third-party-crate Rust API
+lua/mambocolour.lua         zero-third-party-module Lua API
+palettes/mamboorche/        four authoritative UI/accent CSV files
+script/test.lua             Lua API contract checks
+script/test.sh              combined Rust and Lua validation gate
+docs/                       synchronized detailed documentation
 ```
 
 ## Validation
 
-The repository has focused local CLI and installer checks, but no CI or release workflow. Run:
+The repository has focused local Rust and Lua checks but no CI or release workflow. Run these commands in order:
 
 ```bash
 ./script/test.sh
@@ -134,15 +138,17 @@ The repository has focused local CLI and installer checks, but no CI or release 
 git diff --check
 ```
 
-The shell test covers syntax, both installed names, install/uninstall ownership, `NO_COLOR`, every theme and format, compatibility output, invalid source data, usage errors, and atomic target protection.
+The first command runs Rust unit tests and Lua contract tests. It checks paired scheme keys and accent order, stable role lookup, hexadecimal and RGB output, deterministic seeded selection, and unseeded Lua selection.
 
 ## Development
 
-Treat theme names, token names, command arguments, output filenames, and generated grammar as public interfaces. Coordinate incompatible changes with MamboDot and MamboSite before removal; regenerate and validate both consumers when their reviewed snapshots change.
+Treat scheme names, UI role methods, colour return forms, seeded selection, CSV paths and schema, and accent ordering as public interfaces. A change to an accent's descriptive key does not affect random-only consumers, but changing the order changes seeded assignments. Keep the two UI files role-compatible and the two colour files key-and-order compatible.
+
+MamboColour owns palette parsing and selection behavior, while consumers own CSS properties, Hyprland values, widget styles, and other framework mappings. Do not restore application-specific generators to this provider boundary.
 
 Author documentation in `notes/Docs/Projects/MamboColour/`, update page metadata, then run `node Scripts/sync_docs.js --sync MamboColour MamboWiki` from `notes/`. Review the root README and complete `docs/` replacement before committing.
 
-These palettes are maintained for Project Mambo, so external pull requests are not currently requested. Bug reports and generator suggestions are welcome as repository issues.
+These palettes are maintained for Project Mambo, so external pull requests are not currently requested. Bug reports and API suggestions are welcome as repository issues.
 
 ## License
 

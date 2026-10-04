@@ -1,0 +1,16 @@
+[package]
+name = "mambocolour"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT"
+repository = "https://github.com/ProjectMambo/MamboColour"
+description = "Shared semantic and accent palettes for Project Mambo"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+

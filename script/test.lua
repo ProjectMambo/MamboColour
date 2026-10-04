@@ -1,0 +1,16 @@
+local root = assert(arg[1], "repository root is required")
+local mambocolour = dofile(root .. "/lua/mambocolour.lua")
+local dark = mambocolour.theme("dark")
+local light = mambocolour.theme("light")
+
+assert(dark:ui():fg():hex() == "#faf7f2")
+local red, green, blue = light:ui():fg():rgb()
+assert(red == 28 and green == 17 and blue == 17)
+assert(dark:colour():len() == 21)
+assert(dark:colour():random_seeded(42):hex() == "#a2b088")
+assert(light:colour():random_seeded(42):hex() == "#738763")
+assert(dark:colour():random_seeded(42):hex() ~= dark:colour():random_seeded(43):hex())
+assert(dark:colour():random_seeded(42):hex() ~= light:colour():random_seeded(42):hex())
+assert(dark:colour():random():hex():match("^#[0-9a-f]+$"))
+
+print("MamboColour Lua API checks passed")
