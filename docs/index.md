@@ -28,4 +28,4 @@ Accent names remain an authoring detail rather than a consumer dependency. Each 
 
 ## Current status
 
-The source API transition is active and currently tested on Linux. The Rust crate is at `0.1.0` but is not published, the Lua module is distributed with the source tree, and consumers should pin a reviewed repository commit. The former `mbcolor`/`mbcolour` command, format generator, and separate MamboOutback family are no longer part of the interface.
+The source API transition is active and currently tested on Linux. The Rust crate is at `0.2.0` but is not published, the Lua module is distributed with the source tree, and consumers should pin a reviewed repository commit. Both APIs share an explicit 32-bit seeded-selection domain and validate both schemes as one paired contract. The former `mbcolor`/`mbcolour` command, format generator, and separate MamboOutback family are no longer part of the interface.

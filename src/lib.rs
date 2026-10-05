@@ -1,7 +1,7 @@
 //! Native access to the `MamboOrche` UI and accent palettes.
 
 use std::sync::OnceLock;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 const UI_LIGHT: &str = include_str!("../palettes/mamboorche/ui-light.csv");
@@ -28,9 +28,8 @@ const UI_ROLES: &[&str] = &[
     "error",
 ];
 
-static LIGHT: OnceLock<Theme> = OnceLock::new();
-static DARK: OnceLock<Theme> = OnceLock::new();
-static RANDOM_COUNTER: AtomicU64 = AtomicU64::new(0);
+static THEMES: OnceLock<(Theme, Theme)> = OnceLock::new();
+static RANDOM_COUNTER: AtomicU32 = AtomicU32::new(0);
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Scheme {
@@ -131,14 +130,18 @@ impl ColourPalette {
         let time = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .map_or(0, |duration| {
-                duration.as_secs().rotate_left(32) ^ u64::from(duration.subsec_nanos())
+                let seconds = duration.as_secs().to_le_bytes();
+                let folded_seconds =
+                    u32::from_le_bytes([seconds[0], seconds[1], seconds[2], seconds[3]])
+                        ^ u32::from_le_bytes([seconds[4], seconds[5], seconds[6], seconds[7]]);
+                folded_seconds ^ duration.subsec_nanos()
             });
         self.random_seeded(time ^ RANDOM_COUNTER.fetch_add(1, Ordering::Relaxed))
     }
 
-    /// Chooses a palette colour reproducibly. Lua uses the same seed mapping.
+    /// Chooses a palette colour reproducibly across the shared 32-bit Rust/Lua seed domain.
     #[must_use]
-    pub fn random_seeded(&self, seed: u64) -> Colour {
+    pub fn random_seeded(&self, seed: u32) -> Colour {
         self.0[seeded_index(seed, self.0.len())]
     }
 
@@ -156,23 +159,62 @@ impl ColourPalette {
 /// Returns the bundled `MamboOrche` theme for one colour scheme.
 #[must_use]
 pub fn theme(scheme: Scheme) -> &'static Theme {
+    let themes = THEMES.get_or_init(load);
     match scheme {
-        Scheme::Light => LIGHT.get_or_init(|| load(UI_LIGHT, COLOUR_LIGHT)),
-        Scheme::Dark => DARK.get_or_init(|| load(UI_DARK, COLOUR_DARK)),
+        Scheme::Light => &themes.0,
+        Scheme::Dark => &themes.1,
     }
 }
 
-fn load(ui: &'static str, colour: &'static str) -> Theme {
-    let ui = parse(ui);
+fn load() -> (Theme, Theme) {
+    load_pair(UI_LIGHT, UI_DARK, COLOUR_LIGHT, COLOUR_DARK)
+}
+
+fn load_pair(
+    ui_light: &'static str,
+    ui_dark: &'static str,
+    colour_light: &'static str,
+    colour_dark: &'static str,
+) -> (Theme, Theme) {
+    let ui_light = parse(ui_light);
+    let ui_dark = parse(ui_dark);
     assert_eq!(
-        ui.iter().map(|(key, _)| *key).collect::<Vec<_>>(),
+        keys(&ui_light),
         UI_ROLES,
-        "bundled UI palette roles do not match the public API"
+        "bundled light UI palette roles do not match the public API"
     );
-    Theme {
-        ui: UiPalette(ui),
-        colour: ColourPalette(parse(colour).into_iter().map(|(_, value)| value).collect()),
-    }
+    assert_eq!(
+        keys(&ui_dark),
+        UI_ROLES,
+        "bundled dark UI palette roles do not match the public API"
+    );
+
+    let colour_light = parse(colour_light);
+    let colour_dark = parse(colour_dark);
+    assert_eq!(
+        keys(&colour_light),
+        keys(&colour_dark),
+        "bundled accent palette keys and order do not match"
+    );
+
+    (
+        Theme {
+            ui: UiPalette(ui_light),
+            colour: ColourPalette(colours(colour_light)),
+        },
+        Theme {
+            ui: UiPalette(ui_dark),
+            colour: ColourPalette(colours(colour_dark)),
+        },
+    )
+}
+
+fn keys(rows: &[(&'static str, Colour)]) -> Vec<&'static str> {
+    rows.iter().map(|(key, _)| *key).collect()
+}
+
+fn colours(rows: Vec<(&'static str, Colour)>) -> Vec<Colour> {
+    rows.into_iter().map(|(_, colour)| colour).collect()
 }
 
 fn parse(source: &'static str) -> Vec<(&'static str, Colour)> {
@@ -226,30 +268,35 @@ fn nibble(value: u8) -> u8 {
     }
 }
 
-fn seeded_index(seed: u64, length: usize) -> usize {
-    const MODULUS: u64 = 4_294_967_296;
-    let mixed = ((seed % MODULUS) * 1_664_525 + 1_013_904_223) % MODULUS;
-    usize::try_from(mixed % u64::try_from(length).expect("palette length fits u64"))
+fn seeded_index(seed: u32, length: usize) -> usize {
+    let mixed = seed.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+    usize::try_from(mixed % u32::try_from(length).expect("palette length fits u32"))
         .expect("palette index fits usize")
 }
 
 #[cfg(test)]
 mod tests {
     use super::{
-        COLOUR_DARK, COLOUR_LIGHT, Colour, Scheme, UI_DARK, UI_LIGHT, UI_ROLES, parse, theme,
+        COLOUR_DARK, COLOUR_LIGHT, Colour, Scheme, UI_DARK, UI_LIGHT, UI_ROLES, keys, load_pair,
+        parse, theme,
     };
 
     #[test]
     fn schemes_have_matching_roles_and_colour_order() {
-        let keys = |source| {
-            parse(source)
-                .into_iter()
-                .map(|(key, _)| key)
-                .collect::<Vec<_>>()
-        };
-        assert_eq!(keys(UI_LIGHT), keys(UI_DARK));
-        assert_eq!(keys(UI_LIGHT), UI_ROLES);
-        assert_eq!(keys(COLOUR_LIGHT), keys(COLOUR_DARK));
+        assert_eq!(keys(&parse(UI_LIGHT)), keys(&parse(UI_DARK)));
+        assert_eq!(keys(&parse(UI_LIGHT)), UI_ROLES);
+        assert_eq!(keys(&parse(COLOUR_LIGHT)), keys(&parse(COLOUR_DARK)));
+    }
+
+    #[test]
+    #[should_panic(expected = "bundled accent palette keys and order do not match")]
+    fn paired_loader_rejects_mismatched_accent_order() {
+        load_pair(
+            UI_LIGHT,
+            UI_DARK,
+            "key,hex\nfirst,#000000\nsecond,#111111",
+            "key,hex\nsecond,#111111\nfirst,#000000",
+        );
     }
 
     #[test]
@@ -262,10 +309,37 @@ mod tests {
         assert_eq!(dark.colour().len(), 21);
         assert_eq!(dark.colour().random_seeded(42).hex(), "#a2b088");
         assert_eq!(light.colour().random_seeded(42).hex(), "#738763");
+        assert_eq!(dark.colour().random_seeded(u32::MAX).hex(), "#bd8f42");
         assert_ne!(
             dark.colour().random_seeded(42).hex(),
             dark.colour().random_seeded(43).hex()
         );
+    }
+
+    #[test]
+    fn semantic_roles_meet_contrast_targets() {
+        for scheme in [Scheme::Light, Scheme::Dark] {
+            let ui = theme(scheme).ui();
+            for foreground in [ui.fg(), ui.fg_muted(), ui.fg_subtle()] {
+                assert_contrast(foreground, ui.bg(), 4.5);
+                assert_contrast(foreground, ui.bg_surface(), 4.5);
+            }
+            for indicator in [
+                ui.selection(),
+                ui.focus(),
+                ui.interactive(),
+                ui.interactive_hover(),
+                ui.success(),
+                ui.warning(),
+                ui.error(),
+            ] {
+                assert_contrast(indicator, ui.bg(), 3.0);
+                assert_contrast(indicator, ui.bg_surface(), 3.0);
+            }
+            for brand in [ui.brand(), ui.brand_hover(), ui.brand_active()] {
+                assert_contrast(ui.on_brand(), brand, 4.5);
+            }
+        }
     }
 
     #[test]
@@ -286,6 +360,15 @@ mod tests {
     fn contrast(first: Colour, second: Colour) -> f64 {
         let (first, second) = (luminance(first), luminance(second));
         (first.max(second) + 0.05) / (first.min(second) + 0.05)
+    }
+
+    fn assert_contrast(first: Colour, second: Colour, minimum: f64) {
+        assert!(
+            contrast(first, second) >= minimum,
+            "{} against {} does not meet {minimum}:1 contrast",
+            first.hex(),
+            second.hex()
+        );
     }
 
     fn luminance(colour: Colour) -> f64 {

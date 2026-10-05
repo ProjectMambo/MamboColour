@@ -20,7 +20,7 @@ theme(light | dark)
 
 Every lookup returns a `Colour`. Its hexadecimal form includes a leading `#` and uses lowercase digits. RGB conversion returns channels from `0` through `255`.
 
-The two implementations intentionally agree on scheme names, role names, CSV validation, accent order, and seeded selection. Their language-native details differ:
+The two implementations intentionally agree on scheme names, role names, CSV validation, accent order, the inclusive `0..4294967295` seed domain, and seeded selection. Their language-native details differ:
 
 | Operation | Rust | Lua |
 |---|---|---|
@@ -69,17 +69,17 @@ The crate root exposes these public types and functions:
 | Item | Contract |
 |---|---|
 | `Scheme::{Light, Dark}` | Selects one of the two schemes. |
-| `theme(Scheme) -> &'static Theme` | Lazily parses and caches one process-wide theme per scheme. |
+| `theme(Scheme) -> &'static Theme` | On first access, validates and caches both bundled schemes together, then returns the requested process-wide theme. |
 | `Theme::ui() -> &UiPalette` | Returns the semantic interface palette. |
 | `Theme::colour() -> &ColourPalette` | Returns the accent pool. |
 | `Colour::hex() -> &'static str` | Returns `#rrggbb`. |
 | `Colour::rgb() -> [u8; 3]` | Returns red, green, and blue byte values. |
 | `ColourPalette::random()` | Selects an accent using time and a process-local counter. |
-| `ColourPalette::random_seeded(u64)` | Selects an accent reproducibly without changing shared random state. |
+| `ColourPalette::random_seeded(u32)` | Selects an accent reproducibly without changing shared random state. |
 | `ColourPalette::len()` | Returns the number of accents. |
 | `ColourPalette::is_empty()` | Reports whether the pool is empty; bundled data validation guarantees `false`. |
 
-Rust embeds the CSV files at compile time with `include_str!`. Palette edits therefore take effect after rebuilding the consuming binary; the compiled program performs no palette file I/O.
+Rust embeds the CSV files at compile time with `include_str!`. The first `theme()` call parses all four bundled CSVs, verifies the exact ordered UI roles and paired accent keys and order, and caches both themes together. Palette edits therefore take effect after rebuilding the consuming binary; the compiled program performs no palette file I/O.
 
 ## Lua API
 
@@ -101,9 +101,9 @@ assert(fixture_accent:hex() == palette:colour():random_seeded(42):hex())
 print(card_accent:hex())
 ```
 
-The Lua module returns a table with `theme(scheme)`. It accepts only `"light"` and `"dark"`, reads both files for that scheme on first use, and caches the resulting theme for the lifetime of the loaded module. Restart the process or reload the module to observe palette edits.
+The Lua module eagerly reads and validates all four CSV files as `require("mambocolour")` loads, then returns a table with `theme(scheme)`. It accepts only `"light"` and `"dark"` and caches both resulting themes for the lifetime of the loaded module. Later working-directory changes or palette-file moves and removals are safe for that loaded instance; restart the process or reload the module from a complete layout to observe palette edits.
 
-`random()` uses the Lua runtime's `math.random` state. Applications may manage that state with the runtime's normal facilities. `random_seeded(seed)` accepts a non-negative integer, applies MamboColour's own mapping, and does not consume or modify `math.random` state.
+`random()` reads four bytes from `/dev/urandom` when that device is available. Otherwise it combines module-local counter, clock, time, and table-identity inputs using only the Lua standard library. It never reads, seeds, or modifies the application's `math.random` state. `random_seeded(seed)` accepts an integer from `0` through `4294967295`, applies MamboColour's own mapping, and likewise leaves `math.random` untouched.
 
 ## UI roles
 
@@ -137,6 +137,7 @@ Applications own the mapping from these roles into framework-specific CSS, Hyprl
 
 - Use `random()` for visual variety such as a card's top rule.
 - Use `random_seeded(seed)` when a stable input must receive a stable accent.
+- Pass an integer from `0` through `4294967295`; Rust expresses the shared domain as `u32`, while Lua validates the same bounds at runtime.
 - The same seed selects the same position in Rust and Lua when the scheme and palette revision are identical.
 - Light and dark files keep matching keys in matching order, so one seed selects corresponding accents across schemes.
 - Changing accent order changes seeded results and must be reviewed as a compatibility change.
@@ -174,10 +175,19 @@ The schema contract is:
 - fields do not contain surrounding whitespace or additional commas;
 - keys are unique within one file;
 - every file contains at least one data row;
-- the two UI files provide the complete role set listed above;
+- each UI file provides exactly the role set listed above in that documented order;
 - the two colour files use matching keys in matching order.
 
-Invalid bundled Rust data panics when that scheme is first initialized. Invalid Lua data raises an assertion while loading the scheme. `./script/test.sh` validates both implementations and verifies the cross-scheme role and accent ordering contract.
+Invalid bundled Rust data panics when either scheme is first requested because both themes initialize together. Invalid Lua data raises an assertion while the module loads because all four files initialize together. `./script/test.sh` validates both implementations and verifies the exact UI-role and paired accent-order contracts.
+
+## Migrating from `0.1`
+
+MamboColour `0.2.0` narrows the explicit seeded-selection contract to the shared 32-bit domain. Integer literals and Rust values already typed as `u32` continue to work unchanged.
+
+- Rust callers that passed a `u64` must either reject values above `u32::MAX` or deliberately reduce the old value modulo `2^32` before conversion. Modulo reduction preserves `0.1`'s seeded position because that release applied the same reduction internally.
+- Lua callers must now pass an integer from `0` through `4294967295`. If a `0.1` caller intentionally used a larger exactly represented value, reduce it with `seed % 4294967296` before calling the API to preserve its prior position.
+- Lua applications no longer control MamboColour's unseeded selection through `math.randomseed()`. Use `random_seeded()` when application-controlled repeatability is required.
+- Lua now reports malformed data when the module loads rather than waiting until a scheme is first requested. Keep all four CSV files beside the module for loading even when an application uses only one scheme.
 
 ## Migration from the generator
 
