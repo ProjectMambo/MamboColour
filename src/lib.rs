@@ -124,6 +124,12 @@ impl UiPalette {
 pub struct ColourPalette(Vec<Colour>);
 
 impl ColourPalette {
+    /// Returns one palette colour by zero-based position.
+    #[must_use]
+    pub fn get(&self, index: usize) -> Option<Colour> {
+        self.0.get(index).copied()
+    }
+
     /// Chooses a palette colour using process-local entropy.
     #[must_use]
     pub fn random(&self) -> Colour {
@@ -307,6 +313,10 @@ mod tests {
         assert_eq!(dark.ui().fg().hex(), "#faf7f2");
         assert_eq!(light.ui().fg().rgb(), [28, 17, 17]);
         assert_eq!(dark.colour().len(), 21);
+        assert_eq!(dark.colour().get(0).map(Colour::hex), Some("#ff6b57"));
+        assert_eq!(light.colour().get(0).map(Colour::hex), Some("#b84233"));
+        assert_eq!(dark.colour().get(20).map(Colour::hex), Some("#627294"));
+        assert_eq!(dark.colour().get(21), None);
         assert_eq!(dark.colour().random_seeded(42).hex(), "#a2b088");
         assert_eq!(light.colour().random_seeded(42).hex(), "#738763");
         assert_eq!(dark.colour().random_seeded(u32::MAX).hex(), "#bd8f42");

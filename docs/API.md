@@ -15,10 +15,10 @@ MamboColour exposes one model in Rust and Lua. Select a light or dark MamboOrche
 ```text
 theme(light | dark)
 ├── ui()       stable semantic roles such as fg() and bg()
-└── colour()   ordered accent pool with random() and random_seeded()
+└── colour()   ordered accent pool with get(), random(), and random_seeded()
 ```
 
-Every lookup returns a `Colour`. Its hexadecimal form includes a leading `#` and uses lowercase digits. RGB conversion returns channels from `0` through `255`.
+Every successful lookup returns a `Colour`. Its hexadecimal form includes a leading `#` and uses lowercase digits. RGB conversion returns channels from `0` through `255`.
 
 The two implementations intentionally agree on scheme names, role names, CSV validation, accent order, the inclusive `0..4294967295` seed domain, and seeded selection. Their language-native details differ:
 
@@ -29,6 +29,7 @@ The two implementations intentionally agree on scheme names, role names, CSV val
 | Read colour palette | `theme.colour()` | `theme:colour()` |
 | Hex output | `colour.hex() -> &str` | `colour:hex() -> string` |
 | RGB output | `colour.rgb() -> [u8; 3]` | `colour:rgb() -> red, green, blue` |
+| Positional colour | `palette.get(index) -> Option<Colour>` | `palette:get(index) -> Colour or nil` |
 | Accent count | `palette.len()` | `palette:len()` |
 | Empty check | `palette.is_empty()` | Not exposed; validated palettes cannot be empty |
 
@@ -55,11 +56,13 @@ use mambocolour::{Scheme, theme};
 
 let palette = theme(Scheme::Dark);
 let foreground = palette.ui().fg();
+let first_accent = palette.colour().get(0).expect("palette is not empty");
 let card_accent = palette.colour().random();
 let fixture_accent = palette.colour().random_seeded(42);
 
 assert_eq!(foreground.hex(), "#faf7f2");
 assert_eq!(foreground.rgb(), [250, 247, 242]);
+assert_eq!(first_accent.hex(), "#ff6b57");
 assert_eq!(fixture_accent, palette.colour().random_seeded(42));
 println!("{}", card_accent.hex());
 ```
@@ -74,6 +77,7 @@ The crate root exposes these public types and functions:
 | `Theme::colour() -> &ColourPalette` | Returns the accent pool. |
 | `Colour::hex() -> &'static str` | Returns `#rrggbb`. |
 | `Colour::rgb() -> [u8; 3]` | Returns red, green, and blue byte values. |
+| `ColourPalette::get(usize) -> Option<Colour>` | Returns one zero-based accent position, or `None` when it is out of range. |
 | `ColourPalette::random()` | Selects an accent using time and a process-local counter. |
 | `ColourPalette::random_seeded(u32)` | Selects an accent reproducibly without changing shared random state. |
 | `ColourPalette::len()` | Returns the number of accents. |
@@ -91,10 +95,12 @@ local mambocolour = require("mambocolour")
 
 local palette = mambocolour.theme("dark")
 local foreground = palette:ui():fg()
+local first_accent = palette:colour():get(0)
 local card_accent = palette:colour():random()
 local fixture_accent = palette:colour():random_seeded(42)
 
 assert(foreground:hex() == "#faf7f2")
+assert(first_accent:hex() == "#ff6b57")
 local red, green, blue = foreground:rgb()
 assert(red == 250 and green == 247 and blue == 242)
 assert(fixture_accent:hex() == palette:colour():random_seeded(42):hex())
@@ -103,7 +109,7 @@ print(card_accent:hex())
 
 The Lua module eagerly reads and validates all four CSV files as `require("mambocolour")` loads, then returns a table with `theme(scheme)`. It accepts only `"light"` and `"dark"` and caches both resulting themes for the lifetime of the loaded module. Later working-directory changes or palette-file moves and removals are safe for that loaded instance; restart the process or reload the module from a complete layout to observe palette edits.
 
-`random()` reads four bytes from `/dev/urandom` when that device is available. Otherwise it combines module-local counter, clock, time, and table-identity inputs using only the Lua standard library. It never reads, seeds, or modifies the application's `math.random` state. `random_seeded(seed)` accepts an integer from `0` through `4294967295`, applies MamboColour's own mapping, and likewise leaves `math.random` untouched.
+`get(index)` requires a non-negative integer, uses a zero-based index like Rust, and returns `nil` at or beyond `len()`. `random()` reads four bytes from `/dev/urandom` when that device is available. Otherwise it combines module-local counter, clock, time, and table-identity inputs using only the Lua standard library. It never reads, seeds, or modifies the application's `math.random` state. `random_seeded(seed)` accepts an integer from `0` through `4294967295`, applies MamboColour's own mapping, and likewise leaves `math.random` untouched.
 
 ## UI roles
 
@@ -135,12 +141,13 @@ Applications own the mapping from these roles into framework-specific CSS, Hyprl
 
 `colour()` returns the 21-value accent palette for the selected scheme. It does not expose lookup by accent key, so consumers stay independent from descriptive accent-name changes.
 
+- Use `get(index)` with `len()` to read one direct colour or enumerate the whole ordered palette. Indexes are zero-based in both languages, and the same index selects paired light and dark values.
 - Use `random()` for visual variety such as a card's top rule.
 - Use `random_seeded(seed)` when a stable input must receive a stable accent.
 - Pass an integer from `0` through `4294967295`; Rust expresses the shared domain as `u32`, while Lua validates the same bounds at runtime.
 - The same seed selects the same position in Rust and Lua when the scheme and palette revision are identical.
 - Light and dark files keep matching keys in matching order, so one seed selects corresponding accents across schemes.
-- Changing accent order changes seeded results and must be reviewed as a compatibility change.
+- Changing accent order changes direct positions and seeded results and must be reviewed as a compatibility change.
 
 Neither random method is suitable for cryptography, secrets, security decisions, or statistically rigorous sampling.
 
@@ -180,6 +187,10 @@ The schema contract is:
 
 Invalid bundled Rust data panics when either scheme is first requested because both themes initialize together. Invalid Lua data raises an assertion while the module loads because all four files initialize together. `./script/test.sh` validates both implementations and verifies the exact UI-role and paired accent-order contracts.
 
+## Migrating from `0.2`
+
+MamboColour `0.3.0` adds zero-based `get(index)` to both APIs. Existing `0.2` consumers continue to compile and behave unchanged after repinning. Use `get()` only when a consumer needs a direct position or complete ordered enumeration; continue using UI roles for semantic interface states and the random methods for one-off decorative selection.
+
 ## Migrating from `0.1`
 
 MamboColour `0.2.0` narrows the explicit seeded-selection contract to the shared 32-bit domain. Integer literals and Rust values already typed as `u32` continue to work unchanged.
@@ -196,7 +207,7 @@ The `mbcolor` and `mbcolour` aliases, installer, generator, four former palette 
 1. pinning or vendoring the MamboColour revision it has reviewed;
 2. selecting the Rust or Lua API at one consumer-owned adapter boundary;
 3. replacing direct UI token access with semantic role methods;
-4. replacing decorative accent-name or index access with `random()` or `random_seeded()`; and
+4. replacing decorative accent-name access with zero-based `get()`, `random()`, or `random_seeded()` according to whether the consumer needs enumeration, fresh variety, or repeatability; and
 5. deleting generator invocations and generated snapshots that no remaining interface consumes.
 
 MamboColour no longer installs a global command and creates no generated files. Removing it means deleting the consumer's dependency or vendored checkout after that consumer stops importing the API.

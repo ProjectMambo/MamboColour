@@ -75,6 +75,17 @@ end
 local ColourPalette = {}
 ColourPalette.__index = ColourPalette
 
+function ColourPalette:get(index)
+    assert(
+        type(index) == "number" and index >= 0 and index % 1 == 0,
+        "index must be a non-negative integer"
+    )
+    local value = self.values[index + 1]
+    if value then
+        return colour(value)
+    end
+end
+
 local function seeded_index(seed, length)
     assert(
         type(seed) == "number" and seed >= 0 and seed <= maximum_seed and seed % 1 == 0,

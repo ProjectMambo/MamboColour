@@ -20,7 +20,7 @@ Applications should ask for a foreground, surface, status, or varied accent with
 
 ## Status
 
-MamboColour is active and tested on Linux. The Rust crate is versioned as `0.2.0`; it is not published to a registry, and the Lua module is distributed from the same source checkout. There is no global command, generated-output interface, release artifact, or CI workflow.
+MamboColour is active and tested on Linux. The Rust crate is versioned as `0.3.0`; it is not published to a registry, and the Lua module is distributed from the same source checkout. There is no global command, generated-output interface, release artifact, or CI workflow.
 
 The previous `mbcolor`/`mbcolour` generator and the separate MamboOrche and MamboOutback theme names have been removed. Consumers should pin a reviewed repository commit while there is no package release and migrate directly to one of the APIs.
 
@@ -29,6 +29,7 @@ The previous `mbcolor`/`mbcolour` generator and the separate MamboOrche and Mamb
 - As a UI consumer, I can request stable semantic roles such as `fg()` and `bg_surface()` without depending on concrete colour names.
 - As a card-list consumer, I can call `random()` for a varied accent such as a card's top line.
 - As a test or deterministic builder, I can call `random_seeded(seed)` and receive the same accent position in Rust and Lua.
+- As a palette consumer, I can use zero-based `get(index)` with `len()` to read or enumerate colour values without depending on their descriptive CSV names.
 - As a palette maintainer, I can review four application-neutral CSV files and validate both language interfaces with one gate.
 
 ## Getting started
@@ -54,6 +55,7 @@ use mambocolour::{Scheme, theme};
 let colours = theme(Scheme::Dark);
 let foreground = colours.ui().fg().hex();
 let card_line = colours.colour().random().hex();
+let first_accent = colours.colour().get(0).unwrap().hex();
 ```
 
 For Lua, preserve the checkout's `lua/` and `palettes/` layout, add the module directory to `package.path`, and use the same model:
@@ -65,6 +67,7 @@ local mambocolour = require("mambocolour")
 local colours = mambocolour.theme("dark")
 local foreground = colours:ui():fg():hex()
 local card_line = colours:colour():random():hex()
+local first_accent = colours:colour():get(0):hex()
 ```
 
 ## Dependencies
@@ -87,12 +90,12 @@ Both languages expose a theme with two parts:
 ```text
 theme(light | dark)
 ├── ui()       role methods: fg(), bg(), brand(), success(), ...
-└── colour()   random(), random_seeded(seed), len()
+└── colour()   get(index), random(), random_seeded(seed), len()
 ```
 
-`Colour` values expose `hex()` and `rgb()`. UI role methods are the compatibility boundary; their concrete values may change with a palette revision. Accent keys are not exposed, so a descriptive key can change without forcing consumers to change. Accent order is significant because `random_seeded()` maps the same seed to the same position across Rust and Lua.
+`Colour` values expose `hex()` and `rgb()`. UI role methods are the semantic compatibility boundary; their concrete values may change with a palette revision. `get(index)` uses the same zero-based position in Rust and Lua and returns no value outside `0..len()`. Accent keys are not exposed, so a descriptive key can change without forcing consumers to change. Accent order is significant because both `get()` and `random_seeded()` select positions shared by the light and dark schemes.
 
-`random()` is for visual variation and is not cryptographically secure. Lua reads `/dev/urandom` when available and otherwise uses a module-local standard-library fallback without reading or modifying `math.random`; Rust uses process-local entropy. `random_seeded()` is for repeatable assignment and tests, accepts the shared `0..4294967295` seed domain, and does not alter shared PRNG state. See the [API reference](API.md) for every role, language-specific signatures, file validation, and `0.1` migration guidance.
+`random()` is for visual variation and is not cryptographically secure. Lua reads `/dev/urandom` when available and otherwise uses a module-local standard-library fallback without reading or modifying `math.random`; Rust uses process-local entropy. `random_seeded()` is for repeatable assignment and tests, accepts the shared `0..4294967295` seed domain, and does not alter shared PRNG state. See the [API reference](API.md) for every role, language-specific signatures, file validation, and version migration guidance.
 
 ## Palettes
 
@@ -105,7 +108,7 @@ MamboOrche is one theme family with UI and general-colour layers in light and da
 | `palettes/mamboorche/colour-light.csv` | Light ordered accent pool |
 | `palettes/mamboorche/colour-dark.csv` | Dark ordered accent pool |
 
-Every file uses the `key,hex` schema. Both implementations require each UI file to contain the exact public role sequence and require the light and dark accent files to contain matching keys in matching order. UI keys are stable API roles. Colour keys are maintainer-readable identities; API consumers select their values through `random()` or `random_seeded()` rather than by name.
+Every file uses the `key,hex` schema. Both implementations require each UI file to contain the exact public role sequence and require the light and dark accent files to contain matching keys in matching order. UI keys are stable API roles. Colour keys are maintainer-readable identities; API consumers select their values by zero-based position or through `random()` and `random_seeded()` rather than by name.
 
 ## Documentation
 
@@ -138,11 +141,11 @@ The repository has focused local Rust and Lua checks but no CI or release workfl
 git diff --check
 ```
 
-The first command runs Rust unit tests and Lua contract tests. It checks exact ordered UI roles, paired accent keys and order, stable role lookup, hexadecimal and RGB output, the shared 32-bit seeded-selection domain, unseeded Lua selection, and malformed-palette rejection.
+The first command runs Rust unit tests and Lua contract tests. It checks exact ordered UI roles, paired accent keys and order, stable role and zero-based colour lookup, hexadecimal and RGB output, the shared 32-bit seeded-selection domain, unseeded Lua selection, and malformed-palette rejection.
 
 ## Development
 
-Treat scheme names, UI role methods, colour return forms, seeded selection, CSV paths and schema, and accent ordering as public interfaces. A change to an accent's descriptive key does not affect random-only consumers, but changing the order changes seeded assignments. Keep the two UI files role-compatible and the two colour files key-and-order compatible.
+Treat scheme names, UI role methods, colour return forms, positional and seeded selection, CSV paths and schema, and accent ordering as public interfaces. A change to an accent's descriptive key does not affect consumers, but changing the order changes positional and seeded assignments. Keep the two UI files role-compatible and the two colour files key-and-order compatible.
 
 MamboColour owns palette parsing and selection behavior, while consumers own CSS properties, Hyprland values, widget styles, and other framework mappings. Do not restore application-specific generators to this provider boundary.
 
