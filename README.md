@@ -116,6 +116,7 @@ Every file uses the `key,hex` schema. Both implementations require each UI file 
 |---|---|
 | Read the canonical Wiki documentation | [projectmambo.org/mambocolour/](https://projectmambo.org/mambocolour/) |
 | Integrate Rust or Lua | [API reference](docs/API.md) |
+| Follow maintenance, adaptability, and compatibility gates | [Development plan](docs/Development%20Plan.md) |
 | Inspect authoritative data | [`palettes/mamboorche/`](palettes/mamboorche/) |
 | Check package metadata and Rust minimum version | [`Cargo.toml`](Cargo.toml) |
 
